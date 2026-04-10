@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=300"/>
+<title>Wholesome Garden</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --bg:      #f0ebe3;
+  --card:    #faf8f4;
+  --border:  #ddd5c8;
+  --text:    #3a3228;
+  --text-d:  #7a6e64;
+  --green:   #4a9b5f;
+  --green-l: #6dbf80;
+  --green-d: #2d6b40;
+  --pass:    #4a9b5f;
+  --fail:    #c8c0b4;
+  --amber:   #e8a838;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text); }
+
+#root { width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: none; }
+#root::-webkit-scrollbar { display: none; }
+
+/* ── Header ── */
+.header { background: var(--green-d); color:#fff; padding: 6px 12px 6px;
+  display:flex; align-items:center; justify-content:space-between; }
+.header-title { font-size:13px; font-weight:500; letter-spacing:0.04em; }
+.header-sub   { font-size:9px; opacity:0.7; letter-spacing:0.06em; }
+.clock        { font-size:10px; opacity:0.8; }
+
+/* ── Tabs ── */
+.tabs { display:flex; border-bottom: 1px solid var(--border); background:var(--card); }
+.tab  { flex:1; padding:8px 0; font-family:'DM Mono',monospace; font-size:10px;
+  font-weight:500; letter-spacing:0.06em; text-transform:uppercase; background:none;
+  border:none; border-bottom:2px solid transparent; cursor:pointer; color:var(--text-d);
+  transition: all 0.2s; }
+.tab.active   { color:var(--green-d); border-bottom-color:var(--green-d); }
+.tab:hover:not(.active) { color:var(--text); }
+
+/* ── Task panels ── */
+.task-panel { display:none; }
+.task-panel.active { display:block; }
+
+/* ── Scene ── */
+.scene {
+  position: relative; width: 100%; height: 210px; overflow: hidden;
+  /* sky default = day */
+  background: linear-gradient(180deg, #87ceeb 0%, #b8dcf0 70%, #6b4c2a 70%, #4a3020 100%);
+  transition: background 1.5s ease;
+}
+.scene.dusk  { background: linear-gradient(180deg,#e07040 0%,#f0a060 55%,#6b4c2a 70%,#4a3020 100%); }
+.scene.night { background: linear-gradient(180deg,#0d1030 0%,#1a1a4e 60%,#3d2b10 70%,#2a1a08 100%); }
+.scene.dawn  { background: linear-gradient(180deg,#e08040 0%,#f0c080 60%,#6b4c2a 70%,#4a3020 100%); }
+.scene.day   { background: linear-gradient(180deg,#87ceeb 0%,#b8dcf0 70%,#6b4c2a 70%,#4a3020 100%); }
+.scene.hot   { background: linear-gradient(180deg,#ff7030 0%,#ffa060 70%,#6b4c2a 70%,#4a3020 100%); }
+
+/* ── Sun ── */
+.sun { position:absolute; width:32px; height:32px; border-radius:50%;
+  background:radial-gradient(circle,#ffe066,#f5c842);
+  box-shadow:0 0 14px 4px rgba(245,200,66,0.5);
+  top: -36px; left: 24px;
+  transition: top 1.4s ease, background 1s, box-shadow 1s; }
+.scene.day  .sun { top:12px; }
+.scene.dawn .sun { top:60px; }
+.scene.hot  .sun { top:10px; background:radial-gradient(circle,#ff9040,#ff6010);
+  box-shadow:0 0 24px 8px rgba(255,80,20,0.6); }
+.scene.night .sun { top:-36px; }
+.scene.dusk  .sun { top:80px; background:radial-gradient(circle,#ff9040,#ff6010); }
+
+/* ── Moon ── */
+.moon { position:absolute; width:24px; height:24px; border-radius:50%;
+  background:#f0e68c; box-shadow:0 0 8px rgba(240,230,140,0.4);
+  top:-30px; right:28px; transition:top 1.2s ease; opacity:0.9; }
+.scene.night .moon { top:14px; }
+.scene.dusk  .moon { top:-30px; }
+
+/* ── Stars ── */
+.stars { position:absolute; inset:0; pointer-events:none; opacity:0;
+  transition: opacity 0.8s; }
+.scene.night .stars { opacity:1; }
+.star { position:absolute; width:2px; height:2px; border-radius:50%;
+  background:#fff; opacity:0.7; }
+
+/* ── Ground soil patch ── */
+.soil-patch {
+  position:absolute; bottom:22px; left:50%; transform:translateX(-50%);
+  width:56px; height:14px; border-radius:50%;
+  background:#c8a870; transition: background 0.8s;  /* dry by default */
+}
+.soil-patch.wet { background:#2d1a08; }              /* darkens visibly when watered */
+
+/* ── Seed ── */
+.seed { position:absolute; bottom:30px; left:50%; transform:translateX(-50%);
+  width:8px; height:8px; border-radius:50%; background:#7a5030;
+  transition: transform 0.4s, background 0.4s; }
+
+/* ── Plant stem + leaves ── */
+.plant { position:absolute; bottom:30px; left:50%; transform:translateX(-50%);
+  width:60px; display:flex; flex-direction:column; align-items:center; }
+.stem { width:3px; border-radius:2px; background:#3d7a3a;
+  transform:scaleY(0); transform-origin:bottom;
+  transition:height 0.8s ease, transform 0.8s ease; }
+.stem.show    { transform:scaleY(1); }
+.stem.wilted  { transform:scaleY(1) rotate(25deg); transform-origin:bottom center;
+  background:#9a8040; }
+.leaves { display:flex; gap:0; position:relative; width:100%;
+  justify-content:center; opacity:0; transition:opacity 0.6s; }
+.leaves.show { opacity:1; }
+.leaf { width:14px; height:8px; border-radius:50% 50% 50% 0;
+  background:#4a9b5f; transition:background 0.5s; }
+.leaf.left  { transform:rotate(-30deg) translateX(4px); }
+.leaf.right { transform:rotate(210deg) translateX(-4px); }
+.leaf.dead  { background:#9a8040; }
+
+.flower { position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+  width:16px; height:16px; opacity:0; transition:opacity 0.8s; z-index:2; }
+.flower.show { opacity:1; }
+.petal { position:absolute; width:6px; height:10px; border-radius:50%;
+  background:var(--amber); top:3px; left:5px; transform-origin:5px 10px; }
+.petal:nth-child(1) { transform:rotate(0deg);   }
+.petal:nth-child(2) { transform:rotate(72deg);  }
+.petal:nth-child(3) { transform:rotate(144deg); }
+.petal:nth-child(4) { transform:rotate(216deg); }
+.petal:nth-child(5) { transform:rotate(288deg); }
+.flower-center { position:absolute; width:6px; height:6px; border-radius:50%;
+  background:#f5c842; top:5px; left:5px; }
+
+/* ── Watering can ── */
+/* watering can drawn on phys-canvas, no DOM watering-can element needed */
+
+/* ── Water drops ── */
+.drops { position:absolute; top:34px; right:12px; width:20px; height:50px; }
+.drop { position:absolute; width:4px; height:6px; border-radius:50% 50% 60% 60%;
+  background:#6ab0e0; opacity:0;
+  animation: none; }
+.drop.falling { opacity:1; animation: drop-fall 0.6s ease-in forwards; }
+.drop.wrong   { opacity:1; animation: drop-wrong 0.7s ease-in forwards; }
+
+@keyframes drop-fall {
+  0%   { transform:translateY(0) translateX(0);     opacity:1; }
+  100% { transform:translateY(80px) translateX(2px); opacity:0; }
+}
+@keyframes drop-wrong {
+  0%   { transform:translateY(0) translateX(0);     opacity:1; }
+  100% { transform:translateY(40px) translateX(30px); opacity:0; }
+}
+
+/* ── Thermometer ── */
+.thermometer { position:absolute; top:18px; left:18px; width:20px; height:64px;
+  opacity:0; transition:opacity 0.5s; }
+.thermometer.show { opacity:1; }
+.therm-tube { position:absolute; left:6px; top:0; width:8px; height:52px;
+  border-radius:4px 4px 0 0; border:2px solid #aaa; background:#f5f5f5; overflow:hidden; }
+.therm-fill { position:absolute; bottom:0; left:0; right:0;
+  background:#4a9b5f; transition:height 0.8s ease, background 0.6s; height:20%; }
+.therm-fill.hot { height:90%; background:#e03030; }
+.therm-bulb { position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+  width:16px; height:16px; border-radius:50%; border:2px solid #aaa;
+  background:#4a9b5f; transition:background 0.6s; }
+.therm-bulb.hot { background:#e03030; }
+.therm-label { position:absolute; bottom:-16px; left:50%; transform:translateX(-50%);
+  font-size:8px; white-space:nowrap; color:var(--text-d); }
+
+/* ── Bugs ── */
+.bug { position:absolute; width:5px; height:4px; border-radius:50%;
+  background:#1a1a1a; opacity:0; transition:opacity 0.4s; }
+.bug.show { opacity:0.85; animation:bug-crawl 2s ease-in-out infinite; }
+@keyframes bug-crawl {
+  0%,100% { transform:translate(0,0) rotate(0deg); }
+  25%      { transform:translate(4px,-3px) rotate(15deg); }
+  50%      { transform:translate(-3px,4px) rotate(-10deg); }
+  75%      { transform:translate(5px,2px) rotate(20deg); }
+}
+
+/* ── Stage overlay message (inside scene) ── */
+.scene-msg { position:absolute; bottom:6px; left:50%; transform:translateX(-50%);
+  font-size:9px; color:rgba(255,255,255,0.9); background:rgba(0,0,0,0.35);
+  padding:2px 8px; border-radius:8px; white-space:nowrap; opacity:0;
+  transition:opacity 0.4s; letter-spacing:0.05em; }
+.scene-msg.show { opacity:1; }
+
+/* ── Vertical stepper ── */
+.stepper { padding: 6px 10px 10px; display:flex; flex-direction:column; gap:0; }
+
+.step-item {
+  display:flex; gap:10px; align-items:stretch;
+  padding: 9px 10px 9px 4px;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  cursor: pointer; user-select:none;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+/* Unlocked available steps: show border + subtle shadow to hint clickability */
+.step-item:not(.locked):not(.active):not(.pass):not(.fail) {
+  border-color: var(--border);
+}
+.step-item:hover:not(.locked):not(.active) {
+  background: #eef4f8;
+  border-color: #a0b8d0;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+.step-item.active  { background: #eef4f8; cursor: default; }
+.step-item.pass    { background: #e8f5ec; }
+.step-item.fail    { background: #faeaea; }
+.step-item.locked  { opacity: 0.38; cursor: not-allowed; }
+
+.step-left {
+  display:flex; flex-direction:column; align-items:center; width:26px; flex-shrink:0;
+}
+.step-num {
+  width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  background:var(--border); color:var(--text-d);
+  font-size:10px; font-weight:500;
+  display:flex; align-items:center; justify-content:center;
+  transition: background 0.3s, color 0.3s;
+}
+.step-item.active .step-num  { background:#a0b8d0; color:#fff; }
+.step-item.pass   .step-num  { background:var(--green); color:#fff; }
+.step-item.fail   .step-num  { background:#d0a0a0; color:#fff; }
+
+.step-line {
+  width:2px; flex:1; min-height:8px; background:var(--border);
+  margin-top:4px; border-radius:1px;
+}
+.step-item.pass .step-line { background:var(--green-l); }
+
+.step-right { flex:1; min-width:0; }
+.step-header { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+.step-label  { font-size:11px; font-weight:500; color:var(--text); letter-spacing:0.03em; }
+.step-item.locked .step-label { color:var(--text-d); }
+.step-badge  { font-size:9px; color:var(--green-d); font-weight:500; }
+.step-item.fail .step-badge { color:#a04040; }
+.step-desc   { font-size:8.5px; color:var(--text-d); margin-top:2px; line-height:1.4; }
+
+/* ▶ run hint — shows on available (not locked/active/done) steps */
+.step-item:not(.locked):not(.active):not(.pass):not(.fail) .step-right::after {
+  content: '▶ Run';
+  font-size: 8px;
+  color: var(--green-d);
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  float: right;
+  margin-top: 3px;
+  opacity: 0.7;
+}
+.seed { transition: transform 0.2s ease, background 0.4s; }
+/* .soil-patch.dry is now just the default — no override needed */
+
+/* ── Sim button ── */
+.sim-wrap { padding:6px 10px 6px; }
+.sim-btn { width:100%; padding:7px; background:var(--green-d); color:#fff;
+  border:none; border-radius:6px; font-family:'DM Mono',monospace; font-size:11px;
+  font-weight:500; letter-spacing:0.06em; cursor:pointer; transition:background 0.2s; }
+.sim-btn:hover { background:var(--green); }
+.sim-btn:disabled { background:#9b8e7c; cursor:not-allowed; }
+
+/* ── Stage description card ── */
+.stage-card { margin:0 10px 8px; padding:8px 10px; background:var(--card);
+  border:1px solid var(--border); border-radius:7px; }
+.stage-card-title { font-size:9.5px; font-weight:500; color:var(--text);
+  margin-bottom:3px; letter-spacing:0.04em; }
+.stage-card-body { font-size:9px; color:var(--text-d); line-height:1.5; }
+.stage-card-status { margin-top:4px; font-size:9px; }
+.status-pass { color:var(--green-d); }
+.status-fail { color:#a04040; }
+.status-wait { color:var(--text-d); }
+
+/* ── Task 2 tree scene ── */
+.tree-scene {
+  position:relative; width:100%; height:220px; overflow:hidden;
+  background: linear-gradient(180deg, #c8e8f8 0%, #e8f4e0 75%, #c8a870 75%, #a07840 100%);
+}
+.tree-svg-wrap {
+  position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+}
+.orb {
+  position:absolute; border-radius:50%;
+  transition: all 0.8s ease;
+}
+.orb.dormant {
+  border: 1.5px dashed #b0a898; background: rgba(255,255,255,0.1);
+}
+.orb.active {
+  border: none;
+  box-shadow: 0 0 12px 4px currentColor;
+}
+.orb-label {
+  position:absolute; font-size:8px; white-space:nowrap;
+  color: var(--text-d); text-align:center; transform:translateX(-50%);
+  transition: color 0.5s;
+}
+
+/* ── Feature cards ── */
+.features { padding: 6px 10px 2px; display:flex; flex-direction:column; gap:5px; }
+.feat-card { padding: 6px 9px; background:var(--card); border:1px solid var(--border);
+  border-radius:6px; transition: border-color 0.4s, box-shadow 0.4s; }
+.feat-card.active { border-color:var(--green); box-shadow:0 0 0 1px var(--green-l); }
+.feat-row { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+.feat-name { font-size:10px; font-weight:500; color:var(--text); flex:1; }
+.feat-name.empty { color:var(--text-d); font-style:italic; }
+.feat-badge { font-size:8px; padding:1px 5px; border-radius:3px;
+  background:var(--border); color:var(--text-d); transition:all 0.3s; }
+.feat-badge.pass { background:#d4edda; color:var(--green-d); }
+.feat-bar-wrap { height:3px; background:var(--border); border-radius:2px; margin-top:4px; overflow:hidden; }
+.feat-bar { height:100%; background:linear-gradient(90deg,var(--green),var(--green-l));
+  border-radius:2px; transition:width 0.6s ease; }
+
+/* ── Ideas card ── */
+.ideas-card { margin:4px 10px 6px; padding:8px 10px; background:#f5f8f0;
+  border:1px solid #c8dab8; border-radius:7px; }
+.ideas-title { font-size:9px; font-weight:500; letter-spacing:0.06em; color:var(--green-d);
+  text-transform:uppercase; margin-bottom:5px; }
+.ideas-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px 8px; }
+.idea-item { font-size:9px; color:var(--text-d); padding:1px 0; }
+
+/* ── Test panel (Task 2 uses this) ── */
+.panel { margin:0 10px 10px; background:var(--card); border:1px solid var(--border);
+  border-radius:8px; overflow:hidden; }
+.panel-header { padding:7px 10px 6px; background:#f5f0ea; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between; }
+.panel-title { font-size:10px; font-weight:500; letter-spacing:0.07em; color:var(--text-d); text-transform:uppercase; }
+.panel-count { font-size:9px; color:var(--green-d); font-weight:500; }
+.test-list { padding:5px 0; }
+.test-row { display:flex; align-items:center; gap:6px; padding:3px 10px; }
+.test-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; transition:all 0.4s; }
+.test-dot.pass { background:var(--pass); box-shadow:0 0 4px rgba(74,155,95,0.4); }
+.test-dot.fail { background:var(--fail); }
+.test-name { font-size:9.5px; color:var(--text); white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis; flex:1; transition:color 0.3s; }
+.test-name.pass { color:var(--green-d); }
+.test-name.fail { color:var(--text-d); }
+
+.run-wrap { padding:8px 10px 14px; }
+.run-btn { width:100%; padding:7px; background:var(--green-d); color:#fff;
+  border:none; border-radius:6px; font-family:'DM Mono',monospace; font-size:11px;
+  font-weight:500; letter-spacing:0.06em; cursor:pointer; transition:background 0.2s; }
+.run-btn:hover { background:var(--green); }
+.run-btn.running { background:#9b8e7c; cursor:not-allowed; }
+.last-run { text-align:center; font-size:9px; color:var(--text-d); margin-top:4px; }
+
+.summary { margin:0 10px 8px; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+.summary-fill { height:100%; background:linear-gradient(90deg,var(--green),var(--green-l));
+  border-radius:2px; transition:width 0.8s ease; }
+</style>
+</head>
+<body>
+<div id="root">
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <div class="header-title">🌱 Wholesome Garden</div>
+    <div class="header-sub">EXPERIMENT DASHBOARD</div>
+  </div>
+  <div class="clock" id="clock">--:--</div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab active" id="tab1" onclick="switchTab(1)">Task 1 — Bugs</button>
+  <button class="tab"        id="tab2" onclick="switchTab(2)">Task 2 — Features</button>
+</div>
+
+<!-- ════ TASK 1 ════ -->
+<div class="task-panel active" id="panel1">
+
+  <!-- Scene -->
+  <div class="scene day" id="scene">
+    <!-- Stars (shown at night) -->
+    <div class="stars" id="stars"></div>
+
+    <!-- Sun -->
+    <div class="sun"></div>
+    <!-- Moon -->
+    <div class="moon"></div>
+
+    <!-- Soil patch -->
+    <div class="soil-patch" id="soil-patch"></div>
+
+    <!-- Seed (shows before sprout) -->
+    <div class="seed" id="seed"></div>
+
+    <!-- Plant (stem + leaves + flower) -->
+    <div class="plant" id="plant">
+      <div class="flower" id="flower">
+        <div class="petal"></div><div class="petal"></div><div class="petal"></div>
+        <div class="petal"></div><div class="petal"></div>
+        <div class="flower-center"></div>
+      </div>
+      <div class="leaves" id="leaves">
+        <div class="leaf left"  id="leaf-l"></div>
+        <div class="leaf right" id="leaf-r"></div>
+      </div>
+      <div class="stem" id="stem" style="height:0px"></div>
+    </div>
+
+    <!-- Physics canvas: watering can + particles drawn here, overlaid on the scene -->
+    <canvas id="phys-canvas" style="position:absolute;inset:0;pointer-events:none;z-index:8;"></canvas>
+
+    <!-- Thermometer -->
+    <div class="thermometer" id="thermometer">
+      <div class="therm-tube">
+        <div class="therm-fill" id="therm-fill"></div>
+      </div>
+      <div class="therm-bulb" id="therm-bulb"></div>
+      <div class="therm-label" id="therm-label">22°C</div>
+    </div>
+
+    <!-- Bugs (placed around plant area) -->
+    <div class="bug" id="bug1" style="bottom:36px; left:47%"></div>
+    <div class="bug" id="bug2" style="bottom:42px; left:52%"></div>
+    <div class="bug" id="bug3" style="bottom:34px; left:44%"></div>
+    <div class="bug" id="bug4" style="bottom:48px; left:55%"></div>
+
+    <!-- Scene message -->
+    <div class="scene-msg" id="scene-msg"></div>
+  </div>
+
+  <!-- Live readout from garden.rs -->
+  <div id="can-readout" style="font-size:8px;color:var(--text-d);text-align:center;padding:4px 10px 2px;letter-spacing:0.04em;">reading garden.rs…</div>
+
+  <!-- Vertical stepper -->
+  <div class="stepper">
+
+    <div class="step-item" id="sp1" onclick="triggerStage(1)">
+      <div class="step-left">
+        <div class="step-num" id="sn1">1</div>
+        <div class="step-line" id="sl1"></div>
+      </div>
+      <div class="step-right">
+        <div class="step-header">
+          <span class="step-label">💧 Water</span>
+          <span class="step-badge" id="sb1"></span>
+        </div>
+        <div class="step-desc" id="sd1">Click to run simulation</div>
+      </div>
+    </div>
+
+    <div class="step-item locked" id="sp2" onclick="triggerStage(2)">
+      <div class="step-left">
+        <div class="step-num" id="sn2">2</div>
+        <div class="step-line" id="sl2"></div>
+      </div>
+      <div class="step-right">
+        <div class="step-header">
+          <span class="step-label">☀️ Light</span>
+          <span class="step-badge" id="sb2"></span>
+        </div>
+        <div class="step-desc" id="sd2">Unlocks after Step 1</div>
+      </div>
+    </div>
+
+    <div class="step-item locked" id="sp3" onclick="triggerStage(3)">
+      <div class="step-left">
+        <div class="step-num" id="sn3">3</div>
+      </div>
+      <div class="step-right">
+        <div class="step-header">
+          <span class="step-label">🌡 Monitor</span>
+          <span class="step-badge" id="sb3"></span>
+        </div>
+        <div class="step-desc" id="sd3">Unlocks after Step 2</div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /panel1 -->
+
+<!-- ════ TASK 2 ════ -->
+<div class="task-panel" id="panel2">
+
+  <!-- Tree scene -->
+  <div class="tree-scene">
+    <div class="tree-svg-wrap">
+      <svg viewBox="0 0 200 195" width="200" height="195" xmlns="http://www.w3.org/2000/svg">
+        <!-- Ground shadow -->
+        <ellipse cx="100" cy="192" rx="42" ry="5" fill="rgba(0,0,0,0.12)"/>
+        <!-- Trunk -->
+        <path d="M96,192 C96,178 94,158 93,138 C92,118 91,108 91,96" fill="none" stroke="#6b4226" stroke-width="13" stroke-linecap="round"/>
+        <!-- Root flares -->
+        <path d="M96,192 C89,187 74,190 68,193" stroke="#5a3818" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M98,192 C104,187 118,190 124,193" stroke="#5a3818" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- Main left branch -->
+        <path d="M91,128 C76,116 54,110 32,104" fill="none" stroke="#5a3818" stroke-width="8" stroke-linecap="round"/>
+        <!-- Main right branch -->
+        <path d="M92,120 C106,112 122,106 140,100" fill="none" stroke="#5a3818" stroke-width="8" stroke-linecap="round"/>
+        <!-- Center up -->
+        <path d="M91,106 C90,90 88,74 86,58" fill="none" stroke="#5a3818" stroke-width="6" stroke-linecap="round"/>
+        <!-- Left sub-branches -->
+        <path d="M54,108 C42,96 28,88 16,82" fill="none" stroke="#5a3818" stroke-width="4" stroke-linecap="round"/>
+        <path d="M38,106 C30,97 20,90 12,86" fill="none" stroke="#5a3818" stroke-width="3" stroke-linecap="round"/>
+        <path d="M32,105 C24,95 16,86 10,78" fill="none" stroke="#5a3818" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Right sub-branches -->
+        <path d="M122,104 C130,94 138,86 146,80" fill="none" stroke="#5a3818" stroke-width="4" stroke-linecap="round"/>
+        <path d="M134,102 C140,93 145,84 149,76" fill="none" stroke="#5a3818" stroke-width="3" stroke-linecap="round"/>
+        <path d="M140,100 C147,90 152,82 156,74" fill="none" stroke="#5a3818" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Upper left -->
+        <path d="M87,72 C77,60 66,50 54,42" fill="none" stroke="#5a3818" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M87,66 C83,54 79,44 76,32" fill="none" stroke="#5a3818" stroke-width="3" stroke-linecap="round"/>
+        <!-- Upper right -->
+        <path d="M88,68 C95,56 102,46 110,38" fill="none" stroke="#5a3818" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M87,62 C91,50 97,40 102,30" fill="none" stroke="#5a3818" stroke-width="3" stroke-linecap="round"/>
+        <!-- Tiny twigs -->
+        <path d="M16,82 C10,76 5,70 2,64" fill="none" stroke="#5a3818" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M12,86 C6,81 2,76 0,70" fill="none" stroke="#5a3818" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M146,80 C150,72 153,65 155,58" fill="none" stroke="#5a3818" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M149,76 C154,68 157,60 158,52" fill="none" stroke="#5a3818" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M54,42 C48,34 44,26 42,18" fill="none" stroke="#5a3818" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M76,32 C74,24 72,16 71,8" fill="none" stroke="#5a3818" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M110,38 C114,30 116,22 118,14" fill="none" stroke="#5a3818" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M102,30 C105,22 107,14 108,6" fill="none" stroke="#5a3818" stroke-width="1.5" stroke-linecap="round"/>
+
+        <!-- Feature A: leaves — appear on branches when active -->
+        <g id="tree-leaves" opacity="0" style="transition:opacity 1s">
+          <ellipse cx="22" cy="88" rx="10" ry="7" fill="#4a9b5f" opacity="0.85" transform="rotate(-20 22 88)"/>
+          <ellipse cx="12" cy="80" rx="9" ry="6" fill="#5aad6f" opacity="0.8" transform="rotate(-35 12 80)"/>
+          <ellipse cx="38" cy="100" rx="11" ry="7" fill="#3d8a52" opacity="0.8" transform="rotate(-10 38 100)"/>
+          <ellipse cx="140" cy="88" rx="10" ry="7" fill="#4a9b5f" opacity="0.85" transform="rotate(20 140 88)"/>
+          <ellipse cx="152" cy="78" rx="9" ry="6" fill="#5aad6f" opacity="0.8" transform="rotate(35 152 78)"/>
+          <ellipse cx="130" cy="98" rx="11" ry="7" fill="#3d8a52" opacity="0.8" transform="rotate(10 130 98)"/>
+          <ellipse cx="56" cy="40" rx="9" ry="6" fill="#4a9b5f" opacity="0.8" transform="rotate(-30 56 40)"/>
+          <ellipse cx="76" cy="26" rx="8" ry="5" fill="#5aad6f" opacity="0.8"/>
+          <ellipse cx="108" cy="32" rx="9" ry="6" fill="#4a9b5f" opacity="0.8" transform="rotate(25 108 32)"/>
+          <ellipse cx="90" cy="54" rx="10" ry="7" fill="#3d8a52" opacity="0.85"/>
+        </g>
+
+        <!-- Feature B: glowing fireflies / sparkles around tree -->
+        <g id="tree-glow" opacity="0" style="transition:opacity 1.2s">
+          <circle cx="8"   cy="72"  r="3" fill="#ffe066" opacity="0.7"><animate attributeName="opacity" values="0.3;0.9;0.3" dur="1.8s" repeatCount="indefinite"/></circle>
+          <circle cx="160" cy="60"  r="3" fill="#ffe066" opacity="0.6"><animate attributeName="opacity" values="0.2;1;0.2"   dur="2.3s" repeatCount="indefinite"/></circle>
+          <circle cx="40"  cy="20"  r="2.5" fill="#ffe066" opacity="0.7"><animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.5s" repeatCount="indefinite"/></circle>
+          <circle cx="165" cy="90"  r="2.5" fill="#ffe066" opacity="0.5"><animate attributeName="opacity" values="0.1;0.9;0.1" dur="2.8s" repeatCount="indefinite"/></circle>
+          <circle cx="5"   cy="100" r="2"   fill="#ffe066" opacity="0.6"><animate attributeName="opacity" values="0.3;1;0.3"   dur="2.0s" repeatCount="indefinite"/></circle>
+          <circle cx="115" cy="10"  r="2.5" fill="#ffe066" opacity="0.7"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="1.6s" repeatCount="indefinite"/></circle>
+        </g>
+
+        <!-- Feature C: fruit — small circles on branches when active -->
+        <g id="tree-fruit" opacity="0" style="transition:opacity 1s">
+          <circle cx="28"  cy="102" r="5" fill="#e05030" stroke="#c03020" stroke-width="0.5"/>
+          <circle cx="16"  cy="84"  r="4" fill="#d04828" stroke="#b03018" stroke-width="0.5"/>
+          <circle cx="46"  cy="108" r="5" fill="#e85838" stroke="#c83828" stroke-width="0.5"/>
+          <circle cx="138" cy="98"  r="5" fill="#e05030" stroke="#c03020" stroke-width="0.5"/>
+          <circle cx="152" cy="82"  r="4" fill="#d04828" stroke="#b03018" stroke-width="0.5"/>
+          <circle cx="124" cy="104" r="5" fill="#e85838" stroke="#c83828" stroke-width="0.5"/>
+          <circle cx="80"  cy="58"  r="4" fill="#e05030" stroke="#c03020" stroke-width="0.5"/>
+          <circle cx="100" cy="44"  r="4" fill="#d04828" stroke="#b03018" stroke-width="0.5"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Feature status dots (small, corner-positioned, not on tree) -->
+    <div id="orb-a" style="display:none"></div><div id="orb-a-label" style="display:none"></div>
+    <div id="orb-b" style="display:none"></div><div id="orb-b-label" style="display:none"></div>
+    <div id="orb-c" style="display:none"></div><div id="orb-c-label" style="display:none"></div>
+  </div>
+
+  <!-- Feature cards -->
+  <div class="features">
+    <div class="feat-card" id="feat-a">
+      <div class="feat-row">
+        <span class="feat-name empty" id="feat-a-name">Feature A — unnamed</span>
+        <span class="feat-badge" id="feat-a-badge">0 / 2</span>
+      </div>
+      <div class="feat-bar-wrap"><div class="feat-bar" id="feat-a-bar" style="width:0%"></div></div>
+    </div>
+    <div class="feat-card" id="feat-b">
+      <div class="feat-row">
+        <span class="feat-name empty" id="feat-b-name">Feature B — unnamed</span>
+        <span class="feat-badge" id="feat-b-badge">0 / 2</span>
+      </div>
+      <div class="feat-bar-wrap"><div class="feat-bar" id="feat-b-bar" style="width:0%"></div></div>
+    </div>
+    <div class="feat-card" id="feat-c">
+      <div class="feat-row">
+        <span class="feat-name empty" id="feat-c-name">Feature C — unnamed</span>
+        <span class="feat-badge" id="feat-c-badge">0 / 2</span>
+      </div>
+      <div class="feat-bar-wrap"><div class="feat-bar" id="feat-c-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- Ideas -->
+  <div class="ideas-card">
+    <div class="ideas-title">🌳 What could grow here?</div>
+    <div class="ideas-grid">
+      <div class="idea-item">🍃 Leaves — light & moisture</div>
+      <div class="idea-item">🍎 Fruit — warmth & water</div>
+      <div class="idea-item">🌸 Blossoms — spring rain</div>
+      <div class="idea-item">🐦 Birds — long health streak</div>
+      <div class="idea-item">✨ Fireflies — darkness periods</div>
+      <div class="idea-item">🌿 Moss — high moisture</div>
+      <div class="idea-item">🍂 Colours — temperature shifts</div>
+      <div class="idea-item">🌧 Wind — moisture change rate</div>
+    </div>
+  </div>
+
+  <!-- Test list -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Tests</span>
+      <span class="panel-count" id="t2-count">0 / 0</span>
+    </div>
+    <div class="test-list" id="t2-list"></div>
+  </div>
+
+  <div class="run-wrap">
+    <button class="run-btn" id="run-btn" onclick="triggerRun()">▶ Run Tests</button>
+    <div class="last-run" id="last-run"></div>
+  </div>
+</div><!-- /panel2 -->
+
+</div><!-- /#root -->
+
+<script>
+// ── Global state ─────────────────────────────────────────────────────────────
+let testResults  = [];
+let simRunning   = false;
+let gardenSource = {
+  can_x: 240.0, can_y: 20.0, can_angle: -30.0,
+  c1: [8,10,0.6], c2: [10,12,0.5], c3: [7,11,0.7], c4: [12,9,0.4], c5: [9,13,0.6]
+}; // live from garden.rs
+
+// Plant state carries over between stages
+let plantState = { stemH: 0, leaves: false, flower: false, soilWet: false, wilted: false };
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const el    = id => document.getElementById(id);
+
+function testPassed(keyword) {
+  return testResults.some(r => r.name.includes(keyword) && r.passed);
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchTab(n) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i+1===n));
+  document.querySelectorAll('.task-panel').forEach((p,i) => p.classList.toggle('active', i+1===n));
+  if (n === 1) {
+    renderCanPreview();
+  } else {
+    // Switching to Task 2 — clean up any leftover Task 1 visual state
+    stopPhysics();
+    resetSun();
+    el('thermometer').className  = 'thermometer';
+    el('therm-fill').className   = 'therm-fill';
+    el('therm-fill').style.height = '';
+    el('therm-bulb').className   = 'therm-bulb';
+    for (let i=1;i<=4;i++) el('bug'+i).className = 'bug';
+    setScene('day');
+    setMsg('');
+  }
+}
+
+// ── Clock ────────────────────────────────────────────────────────────────────
+function updateClock() {
+  const d = new Date();
+  el('clock').textContent = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+updateClock(); setInterval(updateClock, 10000);
+
+// ── Stars setup ──────────────────────────────────────────────────────────────
+(function buildStars() {
+  const s = el('stars');
+  for (let i=0; i<22; i++) {
+    const d = document.createElement('div');
+    d.className = 'star';
+    d.style.left = Math.random()*90+'%';
+    d.style.top  = Math.random()*55+'%';
+    d.style.opacity = (0.4+Math.random()*0.6).toFixed(2);
+    s.appendChild(d);
+  }
+})();
+
+// ── Scene helpers ─────────────────────────────────────────────────────────────
+function setScene(cls) {
+  const scene = el('scene');
+  scene.className = 'scene '+cls;
+}
+
+function setMsg(text) {
+  const m = el('scene-msg');
+  m.textContent = text;
+  m.classList.toggle('show', !!text);
+}
+
+function setStagePill(n, state) {
+  const item = el('sp'+n);
+  item.className = 'step-item' + (state ? ' '+state : '');
+  if (state === 'locked') item.className = 'step-item locked';
+}
+
+function setCard(title, body, statusHTML) {
+  // Find which step is active/just-completed and update its description
+  const n = title.includes('1') || title.includes('Water') ? 1
+          : title.includes('2') || title.includes('Light') ? 2
+          : title.includes('3') || title.includes('Temp')  || title.includes('Monitor') ? 3
+          : 0;
+  if (n) {
+    el('sd'+n).textContent = body;
+    el('sb'+n).innerHTML   = statusHTML || '';
+  }
+}
+
+function setStem(h) {
+  const s = el('stem');
+  s.style.height = h+'px';
+  s.classList.toggle('show', h > 0);
+}
+
+// ── Scene reset helpers ───────────────────────────────────────────────────────
+function resetScene() {
+  setScene('day');
+  setMsg('');
+  el('seed').style.background = '#7a5030';
+  el('seed').style.transform  = '';
+  el('soil-patch').className  = 'soil-patch';
+  stopPhysics();
+  setStem(0);
+  el('leaves').className = 'leaves';
+  el('stem').classList.remove('wilted');
+  el('leaf-l').className = 'leaf left';
+  el('leaf-r').className = 'leaf right';
+  el('flower').className = 'flower';
+  const sunEl = el('scene').querySelector('.sun');
+  sunEl.style.cssText = '';
+  el('thermometer').className  = 'thermometer';
+  el('therm-fill').className   = 'therm-fill';
+  el('therm-fill').style.height = '';
+  el('therm-bulb').className   = 'therm-bulb';
+  el('therm-label').textContent = '22°C';
+  for (let i=1;i<=4;i++) el('bug'+i).className='bug';
+  [1,2,3].forEach(i => {
+    el('sp'+i).className = 'step-item' + (i > 1 ? ' locked' : '');
+    el('sb'+i).innerHTML = '';
+    el('sd'+i).textContent = i === 1 ? 'Click to run simulation'
+      : i === 2 ? 'Unlocks after Step 1' : 'Unlocks after Step 2';
+  });
+}
+
+function resetSun() {
+  const s = el('scene').querySelector('.sun');
+  s.style.cssText = '';
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PHYSICS ENGINE — watering can + particle simulation
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Can geometry in LOCAL coordinates (origin = pivot centre of the can).
+// Spout is on the upper-left. At rest the opening faces upward.
+// When can_angle is positive (clockwise), the spout swings down-left.
+//
+//          O  ← spout tip  (SPOUT_TIP)
+//          |
+//    ╔═════╗           ← BODY top-left (-24,-10)
+//    ║     ╚══╗
+//    ║  water ╠═)  ← handle on right
+//    ╚════════╝           ← BODY bottom-right (20, 10)
+//
+const CAN = {
+  // Body
+  bodyX: -22, bodyY: -12, bodyW: 44, bodyH: 24,
+  // Interior — particles live here. Right wall at x=18, bottom at y=10.
+  innerX: -20, innerY: -10, innerW: 38, innerH: 20,
+  // Spout tube: visually at upper-right. Water travels through it before falling.
+  spoutBase: { x: 22, y: -6  },   // right wall, upper area
+  spoutTip:  { x: 40, y: -24 },   // tip (points upward at rest)
+  // Exit zone: bottom-right of interior, where particles physically collect
+  exitX: 18,
+  exitY: 10,
+};
+
+const GRAVITY_WORLD = 520; // px/s²
+let   physicsRAF    = null;
+let   physicsActive = false;
+
+function stopPhysics() {
+  physicsActive = false;
+  if (physicsRAF) { cancelAnimationFrame(physicsRAF); physicsRAF = null; }
+  // Re-draw the static preview now that sim is stopped
+  setTimeout(renderCanPreview, 50);
+}
+
+// Rotate a point (px,py) by angle radians around origin
+function rotPt(px, py, a) {
+  const c = Math.cos(a), s = Math.sin(a);
+  return { x: px * c - py * s, y: px * s + py * c };
+}
+
+// Check if point (px,py) is inside the can's interior rectangle (in local coords)
+function insideCan(px, py) {
+  return px >= CAN.innerX && px <= CAN.innerX + CAN.innerW &&
+         py >= CAN.innerY && py <= CAN.innerY + CAN.innerH;
+}
+
+// Signed distance from point P to segment AB (used for spout crossing)
+function segSide(ax, ay, bx, by, px, py) {
+  return (bx - ax) * (py - ay) - (by - ay) * (px - ax);
+}
+
+// Run the full physics simulation for Stage 1.
+// Returns a Promise that resolves with { hit: bool } when simulation ends.
+function runWaterPhysics(canX, canY, canAngleDeg, onHit) {
+  return new Promise(resolve => {
+    const canvas    = el('phys-canvas');
+    const sceneEl   = el('scene');
+    canvas.width    = sceneEl.offsetWidth;
+    canvas.height   = sceneEl.offsetHeight;
+    const ctx       = canvas.getContext('2d');
+
+    // Tipping animation: ease the can from its resting angle to +20° more
+    // over 600ms before physics starts, to show the tipping action.
+    const TIP_EXTRA  = 22;         // extra degrees to tip when pressing Water
+    const TIP_MS     = 600;        // animation duration
+    const finalAngle = canAngleDeg + TIP_EXTRA;
+    let tipStart  = null;
+    let tipping   = true;                               // ← was missing, caused ReferenceError
+    let angleRad  = canAngleDeg * Math.PI / 180;
+
+    const seedEl  = el('seed');
+
+    // Hard failsafe: always resolve after 5 s so the button is never stuck
+    const failsafe = setTimeout(() => {
+      if (physicsActive) { physicsActive = false; resolve({ hit: hitSeed }); }
+    }, 5000);
+
+    // ── Spawn particles inside the can ────────────────────────────────────────
+    const particles = [];
+    for (let i = 0; i < 20; i++) {
+      particles.push({
+        // Local coords inside the can body
+        lx:   CAN.innerX + 4 + Math.random() * (CAN.innerW - 8),
+        ly:   CAN.innerY + 4 + Math.random() * (CAN.innerH - 8),
+        vlx:  (Math.random() - 0.5) * 20,
+        vly:  (Math.random() - 0.5) * 20,
+        free: false,        // falling in world space
+        spout: false,       // travelling through spout tube
+        spoutT: 0,          // 0..1 progress along tube
+        wx: 0, wy: 0,
+        wvx: 0, wvy: 0
+      });
+    }
+
+    let lastTs  = null;
+    let hitSeed = false;
+    let elapsed = 0;
+    physicsActive = true;
+
+    function frame(ts) {
+      if (!physicsActive) return;
+      try {
+
+      if (!tipStart) tipStart = ts;
+      if (!lastTs)   lastTs   = ts;
+      const dt  = Math.min((ts - lastTs) / 1000, 0.033);
+      lastTs    = ts;
+
+      // Tipping phase: ease can from resting angle to +22° over 600ms
+      const tipElapsed = ts - tipStart;
+      if (tipping) {
+        const t    = Math.min(tipElapsed / TIP_MS, 1);
+        const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t; // ease in-out
+        const deg  = canAngleDeg + (finalAngle - canAngleDeg) * ease;
+        angleRad   = deg * Math.PI / 180;
+        if (t >= 1) { tipping = false; angleRad = finalAngle * Math.PI / 180; }
+      } else {
+        elapsed += dt;
+      }
+
+      // lgx = +G·sin(θ): rightward at positive θ → pushes toward right-side spout
+      // lgy = +G·cos(θ): downward → particles settle at lower-right corner
+      const lgx = GRAVITY_WORLD * Math.sin(angleRad);
+      const lgy = GRAVITY_WORLD * Math.cos(angleRad);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // ── Draw can body ──────────────────────────────────────────────────────
+      ctx.save();
+      ctx.translate(canX, canY);
+      ctx.rotate(angleRad);
+
+      // Body (rounded rect via arc)
+      ctx.fillStyle = '#7a9e7e';
+      ctx.beginPath();
+      const r = 4, bx = CAN.bodyX, by = CAN.bodyY, bw = CAN.bodyW, bh = CAN.bodyH;
+      ctx.moveTo(bx + r, by);
+      ctx.lineTo(bx + bw - r, by); ctx.arcTo(bx+bw, by, bx+bw, by+r, r);
+      ctx.lineTo(bx + bw, by+bh-r); ctx.arcTo(bx+bw, by+bh, bx+bw-r, by+bh, r);
+      ctx.lineTo(bx + r, by+bh); ctx.arcTo(bx, by+bh, bx, by+bh-r, r);
+      ctx.lineTo(bx, by+r); ctx.arcTo(bx, by, bx+r, by, r);
+      ctx.closePath();
+      ctx.fill();
+
+      // Spout neck
+      ctx.strokeStyle = '#7a9e7e';
+      ctx.lineWidth   = 5;
+      ctx.lineCap     = 'round';
+      ctx.beginPath();
+      ctx.moveTo(CAN.spoutBase.x, CAN.spoutBase.y);
+      ctx.lineTo(CAN.spoutTip.x,  CAN.spoutTip.y);
+      ctx.stroke();
+
+      // Spout cap (opening)
+      ctx.fillStyle = '#5a7e5e';
+      ctx.beginPath();
+      ctx.arc(CAN.spoutTip.x, CAN.spoutTip.y, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Handle (left side)
+      ctx.strokeStyle = '#7a9e7e';
+      ctx.lineWidth   = 3.5;
+      ctx.beginPath();
+      ctx.arc(CAN.bodyX, 0, 9, Math.PI / 2, 3 * Math.PI / 2);
+      ctx.stroke();
+
+      // Highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.fillRect(CAN.bodyX + 4, CAN.bodyY + 3, 12, 4);
+
+      // ── Update and draw INTERIOR particles ────────────────────────────────
+      ctx.fillStyle = '#7ab8e0';
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        if (p.free || p.spout) continue;
+
+        // Apply local gravity
+        p.vlx += lgx * dt;
+        p.vly += lgy * dt;
+        p.lx  += p.vlx * dt;
+        p.ly  += p.vly * dt;
+
+        // Exit: particle reached the bottom-right corner → enter spout tube
+        if (p.lx >= CAN.exitX - 1 && p.ly >= CAN.exitY - 1) {
+          p.spout  = true;
+          p.spoutT = 0;
+          continue;
+        }
+
+        // Bounce off interior walls
+        if (p.lx < CAN.innerX)              { p.lx = CAN.innerX;              p.vlx =  Math.abs(p.vlx) * 0.4; }
+        if (p.lx > CAN.innerX + CAN.innerW) { p.lx = CAN.innerX + CAN.innerW; p.vlx = -Math.abs(p.vlx) * 0.4; }
+        if (p.ly < CAN.innerY)              { p.ly = CAN.innerY;              p.vly =  Math.abs(p.vly) * 0.4; }
+        if (p.ly > CAN.innerY + CAN.innerH) { p.ly = CAN.innerY + CAN.innerH; p.vly = -Math.abs(p.vly) * 0.4; }
+
+        // Draw interior particle
+        ctx.beginPath();
+        ctx.arc(p.lx, p.ly, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // ── Move particles through spout tube ─────────────────────────────────
+      // Particles travel from spoutBase to spoutTip in local coords (still
+      // drawn in world space via the canvas transform), then release at the tip.
+      const TUBE_LEN = Math.hypot(
+        CAN.spoutTip.x - CAN.spoutBase.x,
+        CAN.spoutTip.y - CAN.spoutBase.y);
+      const TUBE_SPD = 180; // px/s along tube
+
+      ctx.save();
+      ctx.translate(canX, canY);
+      ctx.rotate(angleRad);
+      ctx.fillStyle = '#6ab0e0';
+
+      for (const p of particles) {
+        if (!p.spout) continue;
+        p.spoutT = Math.min(p.spoutT + TUBE_SPD * dt / TUBE_LEN, 1);
+        const lx = CAN.spoutBase.x + (CAN.spoutTip.x - CAN.spoutBase.x) * p.spoutT;
+        const ly = CAN.spoutBase.y + (CAN.spoutTip.y - CAN.spoutBase.y) * p.spoutT;
+        ctx.beginPath();
+        ctx.arc(lx, ly, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (p.spoutT >= 1) {
+          // Release at spout tip as world-space free particle
+          const tipW  = rotPt(CAN.spoutTip.x, CAN.spoutTip.y, angleRad);
+          // Initial velocity: along spout direction in world space
+          const dx = CAN.spoutTip.x - CAN.spoutBase.x;
+          const dy = CAN.spoutTip.y - CAN.spoutBase.y;
+          const len = Math.hypot(dx, dy);
+          const dirW = rotPt(dx / len, dy / len, angleRad);
+          p.spout = false;
+          p.free  = true;
+          p.wx    = canX + tipW.x;
+          p.wy    = canY + tipW.y;
+          p.wvx   = dirW.x * 120;
+          p.wvy   = dirW.y * 120;
+        }
+      }
+      ctx.restore();
+
+      // ── Update and draw FREE (world-space) particles ──────────────────────
+      const seedRect   = seedEl.getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
+
+      for (const p of particles) {
+        if (!p.free || p.dead) continue;
+
+        p.wvy += GRAVITY_WORLD * dt;
+        p.wx  += p.wvx * dt;
+        p.wy  += p.wvy * dt;
+
+        // Collision with seed via page coordinates
+        const pageX = canvasRect.left + p.wx;
+        const pageY = canvasRect.top  + p.wy;
+
+        if (!hitSeed &&
+            pageX > seedRect.left - 4 && pageX < seedRect.right  + 4 &&
+            pageY > seedRect.top  - 4 && pageY < seedRect.bottom + 4) {
+          hitSeed = true;
+          onHit();
+        }
+
+        // Draw as teardrop
+        ctx.fillStyle = '#6ab0e0';
+        ctx.beginPath();
+        ctx.arc(p.wx, p.wy, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Remove out-of-bounds free particles
+      for (const p of particles) {
+        if (p.free && (p.wy > canvas.height + 10 || p.wx < -10 || p.wx > canvas.width + 10)) {
+          p.dead = true;
+        }
+      }
+
+      // End condition: simulation ran for >3s or all particles are gone/dead
+      const aliveCount = particles.filter(p => !p.dead && (p.spout || !p.free || p.wy < canvas.height + 10)).length;
+      if (elapsed > 3.0 || aliveCount === 0) {
+        physicsActive = false;
+        clearTimeout(failsafe);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        resolve({ hit: hitSeed });
+        return;
+      }
+
+      physicsRAF = requestAnimationFrame(frame);
+      } catch(e) {
+        console.error('physics frame error:', e);
+        physicsActive = false;
+        clearTimeout(failsafe);
+        resolve({ hit: hitSeed });
+      }
+    }
+
+    physicsRAF = requestAnimationFrame(frame);
+  });
+}
+
+// ── Stage 1 — Watering ────────────────────────────────────────────────────────
+async function stageWatering() {
+  setCard('Stage 1 — Watering', 'Water particles respond to gravity inside the can.', '');
+
+  el('soil-patch').className  = 'soil-patch';
+  el('seed').style.background = '#7a5030';
+  el('seed').style.transform  = '';
+  setStem(0);
+  stopPhysics();
+  await sleep(200);
+
+  // Read live values from garden.rs — no recompile needed
+  const canX     = gardenSource.can_x     ?? 240.0;
+  const canY     = gardenSource.can_y     ?? 20.0;
+  const canAngle = gardenSource.can_angle ?? -30.0;
+
+  let seedHit = false;
+
+  function onSeedHit() {
+    if (seedHit) return;
+    seedHit = true;
+    el('seed').style.transform = 'scale(1.4)';
+    setTimeout(() => {
+      el('seed').style.transform = '';
+      el('soil-patch').classList.add('wet');
+      el('seed').style.background = '#3d7a3a';
+      setTimeout(() => {
+        setStem(6);
+        plantState.soilWet = true;
+        plantState.stemH   = 6;
+      }, 300);
+    }, 120);
+  }
+
+  const result = await runWaterPhysics(canX, canY, canAngle, onSeedHit);
+
+  stopPhysics();
+  await sleep(300);
+
+  const passed = result.hit;
+  setStagePill(1, passed ? 'pass' : 'fail');
+  setCard('Stage 1 — Watering',
+    passed ? 'Water reached the seed. Soil is damp. A sprout emerged.'
+           : 'Water missed the seed.',
+    passed ? '<span class="status-pass">✓</span>' : '');
+
+  if (!passed) { plantState.soilWet = false; plantState.stemH = 0; }
+}
+
+// ── Stage 2 — Day/night cycles ────────────────────────────────────────────────
+async function stageLight(bug2ok) {
+  setCard('Stage 2 — Light', '5 day/night cycles…', '');
+
+  // Always restart from seed — re-running Stage 2 starts fresh
+  setScene('day');
+  setStem(0);
+  el('stem').classList.remove('wilted');
+  el('leaf-l').classList.remove('dead');
+  el('leaf-r').classList.remove('dead');
+  el('leaves').className = 'leaves';
+  el('flower').className = 'flower';
+  el('seed').style.background = plantState.soilWet ? '#3d7a3a' : '#7a5030';
+  if (plantState.soilWet) el('soil-patch').classList.add('wet');
+  await sleep(500);
+
+  // Growth milestones per successful cycle
+  const MILESTONES = [
+    () => { setStem(6); },                                          // 1: sprout
+    () => { setStem(14); },                                         // 2: stem
+    () => { setStem(20); el('leaves').className = 'leaves show'; }, // 3: leaves
+    () => { setStem(26); },                                         // 4: tall
+    () => {                                                           // 5: flower
+      setStem(30);
+      const f = el('flower');
+      f.style.top = '-14px'; // sit right above the stem tip
+      f.className = 'flower show';
+    },
+  ];
+
+  const CYCLES    = 5;
+  let stemH       = 0;
+  let goodCycles  = 0;
+
+  // Read all 5 cycles from live garden.rs values
+  const cycleSrc = [
+    gardenSource.c1 ?? [8,10,0.6],
+    gardenSource.c2 ?? [10,12,0.5],
+    gardenSource.c3 ?? [7,11,0.7],
+    gardenSource.c4 ?? [12,9,0.4],
+    gardenSource.c5 ?? [9,13,0.6],
+  ];
+
+  function cycleValid(c) { return Math.abs(c[0] + c[1] - 24) < 0.05; }
+  function cycleGrowth(c) { return cycleValid(c) ? (c[2] * c[0]) / 24 : 0; }
+
+  // Animate each cycle — timing proportional to actual hours
+  const SCALE = 120; // ms per hour for animation
+  for (let i = 0; i < cycleSrc.length; i++) {
+    const c     = cycleSrc[i];
+    const valid = cycleValid(c);
+    const grow  = cycleGrowth(c);
+    const dayMs  = Math.min(c[0] * SCALE, 1400);
+    const darkMs = Math.min(c[1] * SCALE, 1000);
+
+    setScene('day');
+    setMsg(`day ${i+1} — ${c[0]}h`);
+    await sleep(dayMs);
+
+    setScene('dusk');
+    await sleep(280);
+    setScene('night');
+    setMsg(`night ${i+1} — ${c[1]}h`);
+    await sleep(darkMs);
+
+    if (valid) {
+      // Valid cycle: sun rises, apply growth milestone
+      setScene('dawn');
+      await sleep(260);
+      setScene('day');
+      goodCycles++;
+      if (plantState.soilWet) {
+        MILESTONES[Math.min(goodCycles - 1, MILESTONES.length - 1)]();
+      }
+    }
+    // Invalid cycle stays in night — no dawn
+    setMsg('');
+    await sleep(200);
+  }
+
+  if (!bug2ok && plantState.stemH > 0) {
+    el('stem').classList.add('wilted');
+    el('leaf-l').classList.add('dead');
+    el('leaf-r').classList.add('dead');
+  }
+
+  // Derive final plant state from how many milestones were reached
+  const finalStemH = goodCycles >= 1 ? [6,14,20,26,30][Math.min(goodCycles-1,4)] : 0;
+  plantState.stemH  = plantState.soilWet ? finalStemH : 0;
+  plantState.leaves = goodCycles >= 3 && plantState.soilWet;
+  plantState.flower = goodCycles >= 5 && plantState.soilWet;
+
+  setStagePill(2, bug2ok ? 'pass' : 'fail');
+  setCard('Stage 2 — Light',
+    bug2ok
+      ? (plantState.soilWet
+          ? `${goodCycles}/5 cycles. Sun rose each time. The plant grew.`
+          : `${goodCycles}/5 cycles: sun rose, but the soil was never watered.`)
+      : '0/5 cycles. Night after night — the moon never left.',
+    bug2ok ? '<span class="status-pass">✓</span>' : '');
+}
+
+// ── Stage 3 — Temperature ─────────────────────────────────────────────────────
+async function stageTemp(bug3ok) {
+  setCard('Stage 3 — Temperature', 'Reading the greenhouse temperature…', '');
+
+  resetSun();
+  setScene('day');
+  for (let i=1;i<=4;i++) el('bug'+i).className = 'bug';
+
+  // Restore plant from earlier stages
+  setStem(plantState.stemH);
+  el('stem').classList.remove('wilted');
+  el('leaf-l').classList.remove('dead');
+  el('leaf-r').classList.remove('dead');
+  el('leaves').className = plantState.leaves ? 'leaves show' : 'leaves';
+  el('flower').className = 'flower';
+  if (plantState.soilWet) el('soil-patch').classList.add('wet');
+
+  el('thermometer').className = 'thermometer show';
+  await sleep(800);
+
+  if (bug3ok) {
+    el('therm-fill').style.height = '30%';
+    el('therm-label').textContent = '22°C';
+    setMsg('22°C ✓');
+    await sleep(800);
+    // Only bloom if the plant was actually grown in prior stages
+    if (plantState.stemH > 0 && plantState.leaves) {
+      setStem(30);
+      await sleep(300);
+      el('flower').className = 'flower show';
+      plantState.flower = true;
+    }
+    setMsg('');
+  } else {
+    const sunEl = el('scene').querySelector('.sun');
+    sunEl.style.width     = '64px';
+    sunEl.style.height    = '64px';
+    sunEl.style.top       = '4px';
+    sunEl.style.boxShadow = '0 0 30px 12px rgba(255,80,20,0.7)';
+    el('therm-fill').className    = 'therm-fill hot';
+    el('therm-bulb').className    = 'therm-bulb hot';
+    el('therm-label').textContent = '295°C';
+    setScene('hot');
+    setMsg('295°C ?!');
+    await sleep(600);
+    // Kill any existing plant growth
+    if (plantState.stemH > 0) {
+      el('stem').classList.add('wilted');
+      el('leaf-l').classList.add('dead');
+      el('leaf-r').classList.add('dead');
+      plantState.wilted = true;
+    }
+    await sleep(300);
+    for (let i=1;i<=4;i++) { await sleep(180); el('bug'+i).className='bug show'; }
+    setMsg('');
+  }
+
+  setStagePill(3, bug3ok ? 'pass' : 'fail');
+  const outcome = bug3ok
+    ? (plantState.flower ? 'The plant bloomed. 🌸' : 'Temperature is fine — but the plant needed water and light first.')
+    : 'Temperature reads 295°C. Any existing growth was scorched.';
+  setCard('Stage 3 — Temperature', outcome,
+    bug3ok ? '<span class="status-pass">✓</span>' : '');
+}
+
+// ── Stage lock/unlock based on test results ───────────────────────────────────
+function refreshPillLocks() {
+  if (simRunning) return;
+  const bug1ok = testPassed('watering_increases') || testPassed('recover_dry');
+  function cycleValid(c) { return Math.abs(c[0] + c[1] - 24) < 0.05; }
+  function cycleGrowth(c) { return cycleValid(c) ? (c[2] * c[0]) / 24 : 0; }
+  const srcs = [gardenSource.c1,gardenSource.c2,gardenSource.c3,gardenSource.c4,gardenSource.c5]
+    .map(c => c ?? [8,10,0.6]);
+  const totalGrowth = srcs.reduce((s,c) => s + cycleGrowth(c), 0);
+  const bug2ok = srcs.every(cycleValid) && totalGrowth > 1.5;
+
+  // Step 2 unlocks if: step 1 simulation passed OR watering tests pass
+  const step1done = el('sp1').classList.contains('pass') || el('sp1').classList.contains('fail') || bug1ok;
+  const step2done = el('sp2').classList.contains('pass') || el('sp2').classList.contains('fail') || bug2ok;
+
+  ['sp2','sp3'].forEach((id, i) => {
+    const e = el(id);
+    if (e.classList.contains('active')) return;
+    const prerequisite = i === 0 ? step1done : step2done;
+    if (!e.classList.contains('pass') && !e.classList.contains('fail')) {
+      e.classList.toggle('locked', !prerequisite);
+      if (prerequisite) el('sd'+(i+2)).textContent = 'Click to run simulation';
+    }
+  });
+}
+
+// ── Trigger individual stage ──────────────────────────────────────────────────
+async function triggerStage(n) {
+  if (simRunning) return;
+
+  const bug1ok = testPassed('watering_increases') || testPassed('recover_dry');
+  function cycleValid(c) { return Math.abs(c[0] + c[1] - 24) < 0.05; }
+  function cycleGrowth(c) { return cycleValid(c) ? (c[2] * c[0]) / 24 : 0; }
+  const srcs = [gardenSource.c1,gardenSource.c2,gardenSource.c3,gardenSource.c4,gardenSource.c5]
+    .map(c => c ?? [8,10,0.6]);
+  const totalGrowth = srcs.reduce((s,c) => s + cycleGrowth(c), 0);
+  const bug2ok = srcs.every(cycleValid) && totalGrowth > 1.5;
+  const bug3ok = gardenSource.temp_fixed === true;
+
+  // Use sim result OR test result to determine if prereq is met
+  const step1done = el('sp1').classList.contains('pass') || el('sp1').classList.contains('fail') || bug1ok;
+  const step2done = el('sp2').classList.contains('pass') || el('sp2').classList.contains('fail') || bug2ok;
+
+  if (n === 2 && !step1done) return;
+  if (n === 3 && !step2done) return;
+  if (el('sp'+n).classList.contains('locked')) return;
+
+  simRunning = true;
+
+  if (n === 1) {
+    plantState = { stemH: 0, leaves: false, flower: false, soilWet: false, wilted: false };
+    resetSun();
+    resetScene();
+    await sleep(200);
+  } else {
+    // Moving to a later stage — clear can preview and any Stage 3 artifacts
+    stopPhysics();
+    const cvs = el('phys-canvas');
+    if (cvs) cvs.getContext('2d').clearRect(0, 0, cvs.width, cvs.height);
+    resetSun();
+    setScene('day');
+    el('thermometer').className  = 'thermometer';
+    el('therm-fill').className   = 'therm-fill';
+    el('therm-fill').style.height = '';
+    el('therm-bulb').className   = 'therm-bulb';
+    el('therm-label').textContent = '22°C';
+    for (let i=1;i<=4;i++) el('bug'+i).className = 'bug';
+  }
+
+  setStagePill(n, 'active');
+  setMsg('');
+
+  if (n === 1) await stageWatering();
+  if (n === 2) await stageLight(bug2ok);
+  if (n === 3) await stageTemp(bug3ok);
+
+  simRunning = false;
+  refreshPillLocks();
+}
+
+// ── Test runner / polling ────────────────────────────────────────────────────
+async function triggerRun() {
+  const btn = el('run-btn');
+  if (btn.classList.contains('running')) return;
+  try {
+    await fetch('/api/run', { method:'POST' });
+    btn.textContent = '⏳ Running…';
+    btn.classList.add('running');
+    for (let i=0;i<60;i++) {
+      await sleep(500);
+      await poll();
+      if (!el('run-btn').classList.contains('running')) break;
+    }
+  } catch(_) {}
+}
+
+function renderFeatureCard(prefix, nameTests, respondTest) {
+  // nameTests: array of test name substrings that check the name
+  // respondTest: substring for the "responds" test
+  const t2 = testResults.filter(r => r.suite === 'task2');
+
+  const namePassed   = t2.some(r => nameTests.some(k => r.name.includes(k)) && r.passed);
+  const respondPassed = t2.some(r => r.name.includes(respondTest) && r.passed);
+  const passCount = [namePassed, respondPassed].filter(Boolean).length;
+
+  // Try to extract feature name from test result name (not possible without backend)
+  // Just show generic label
+  const nameEl   = el('feat-'+prefix+'-name');
+  const badgeEl  = el('feat-'+prefix+'-badge');
+  const barEl    = el('feat-'+prefix+'-bar');
+  const cardEl   = el('feat-'+prefix);
+  const orbEl    = el('orb-'+prefix);
+  const orbLabel = el('orb-'+prefix+'-label');
+
+  const pct = passCount / 2 * 100;
+  barEl.style.width = pct + '%';
+  badgeEl.textContent = passCount + ' / 2';
+  badgeEl.className = passCount === 2 ? 'feat-badge pass' : 'feat-badge';
+  cardEl.classList.toggle('active', passCount === 2);
+
+  if (namePassed) {
+    nameEl.className = 'feat-name';
+    nameEl.textContent = 'Feature ' + prefix.toUpperCase() + ' — named ✓';
+  } else {
+    nameEl.className = 'feat-name empty';
+    nameEl.textContent = 'Feature ' + prefix.toUpperCase() + ' — unnamed';
+  }
+
+  // Orb
+  if (passCount === 2) {
+    orbEl.className = 'orb active';
+    orbLabel.textContent = '✓';
+    orbLabel.style.color = 'var(--green-d)';
+  } else if (passCount === 1) {
+    orbEl.className = 'orb active';
+    orbEl.style.opacity = '0.5';
+    orbLabel.textContent = '…';
+  } else {
+    orbEl.className = 'orb dormant';
+    orbEl.style.opacity = '';
+    orbLabel.textContent = '—';
+  }
+
+  // Show tree visual layer for this feature
+  const layerMap = { a: 'tree-leaves', b: 'tree-glow', c: 'tree-fruit' };
+  const layer = el(layerMap[prefix]);
+  if (layer) layer.style.opacity = passCount === 2 ? '1' : '0';
+}
+
+async function poll() {
+  try {
+    const res  = await fetch('/api/results');
+    const data = await res.json();
+    testResults = data.results || [];
+
+    const t2 = testResults.filter(r => r.suite === 'task2');
+    const t2p = t2.filter(r => r.passed).length;
+    el('t2-count').textContent = t2p + ' / ' + t2.length;
+
+    refreshPillLocks();
+    renderFeatureCard('a', ['feature_a_has_name'], 'feature_a_responds');
+    renderFeatureCard('b', ['feature_b_has_name'], 'feature_b_responds');
+    renderFeatureCard('c', ['feature_c_has_name'], 'feature_c_responds');
+
+    el('t2-list').innerHTML = t2.map(r => {
+      const cls = r.passed ? 'pass' : 'fail';
+      const label = r.name.replace(/^test_/, '').replace(/_/g, ' ');
+      return `<div class="test-row">
+        <div class="test-dot ${cls}"></div>
+        <div class="test-name ${cls}" title="${r.name}">${label}</div>
+      </div>`;
+    }).join('') || '<div class="test-row"><div class="test-name fail">No results yet — run tests</div></div>';
+
+    const btn = el('run-btn');
+    if (!data.running) {
+      btn.textContent = '▶ Run Tests';
+      btn.classList.remove('running');
+      if (data.last_run_ms) {
+        const s = Math.round((Date.now() - data.last_run_ms) / 1000);
+        el('last-run').textContent = s < 5 ? 'just now' : s < 60 ? s + 's ago' : Math.round(s / 60) + 'm ago';
+      }
+    }
+  } catch(_) {}
+}
+
+// Poll garden source values (live from .rs file, no recompile)
+// Draw a static preview of the can on the physics canvas whenever values change.
+// This runs even when the simulation isn't active, so position changes are visible immediately.
+function renderCanPreview() {
+  if (physicsActive) return;
+  // Don't draw the can preview if we're on stage 2 or 3
+  const onLaterStage = el('sp2').classList.contains('active') ||
+                       el('sp3').classList.contains('active');
+  if (onLaterStage) return;
+  const canvas  = el('phys-canvas');
+  if (!canvas) return;
+  const sceneEl = el('scene');
+  canvas.width  = sceneEl.offsetWidth;
+  canvas.height = sceneEl.offsetHeight;
+  const ctx     = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const canX     = gardenSource.can_x     ?? 240.0;
+  const canY     = gardenSource.can_y     ?? 20.0;
+  const canAngle = gardenSource.can_angle ?? -30.0;
+  const rad      = canAngle * Math.PI / 180;
+
+  ctx.save();
+  ctx.translate(canX, canY);
+  ctx.rotate(rad);
+
+  // Body
+  ctx.fillStyle = '#7a9e7e';
+  ctx.beginPath();
+  const r = 4, bx = CAN.bodyX, by = CAN.bodyY, bw = CAN.bodyW, bh = CAN.bodyH;
+  ctx.moveTo(bx+r, by);
+  ctx.lineTo(bx+bw-r,by); ctx.arcTo(bx+bw,by,   bx+bw,by+r,   r);
+  ctx.lineTo(bx+bw,by+bh-r); ctx.arcTo(bx+bw,by+bh,bx+bw-r,by+bh,r);
+  ctx.lineTo(bx+r,by+bh); ctx.arcTo(bx,by+bh,bx,by+bh-r,r);
+  ctx.lineTo(bx,by+r); ctx.arcTo(bx,by,bx+r,by,r);
+  ctx.closePath();
+  ctx.fill();
+
+  // Spout neck
+  ctx.strokeStyle = '#7a9e7e'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(CAN.spoutBase.x, CAN.spoutBase.y);
+  ctx.lineTo(CAN.spoutTip.x,  CAN.spoutTip.y);
+  ctx.stroke();
+
+  // Spout cap
+  ctx.fillStyle = '#5a7e5e';
+  ctx.beginPath();
+  ctx.arc(CAN.spoutTip.x, CAN.spoutTip.y, 4, 0, Math.PI*2);
+  ctx.fill();
+
+  // Handle (left side)
+  ctx.strokeStyle = '#7a9e7e'; ctx.lineWidth = 3.5;
+  ctx.beginPath();
+      ctx.arc(CAN.bodyX, 0, 9, Math.PI / 2, 3 * Math.PI / 2);
+  ctx.stroke();
+
+  // Highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.fillRect(CAN.bodyX+4, CAN.bodyY+3, 12, 4);
+
+  ctx.restore();
+}
+
+async function pollSource() {
+  try {
+    const res  = await fetch('/api/state');
+    const text = await res.text();
+    const next = JSON.parse(text);
+    const changed = next.can_x !== gardenSource.can_x ||
+                    next.can_y !== gardenSource.can_y ||
+                    next.can_angle !== gardenSource.can_angle;
+    gardenSource = next;
+    el('can-readout').textContent =
+      `${next.can_x}, ${next.can_y}, ${next.can_angle}°`;
+    if (changed) renderCanPreview();
+  } catch(e) {
+    el('can-readout').textContent = 'error reading garden.rs';
+    console.error('pollSource:', e);
+  }
+}
+
+// Init
+pollSource();
+setInterval(pollSource, 500); // fast enough to feel instant after saving
+poll();
+setInterval(poll, 4000);
+resetScene();
+</script>
+</body>
+</html>
