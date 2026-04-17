@@ -1,6 +1,2 @@
-# Never ignore test files or solutions — always commit these
-!sim/tests/task1_tests.rs
-!sim/tests/task2_tests.rs
-!SOLUTIONS.md
 target/
 node_modules/
