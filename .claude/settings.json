@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "deny": [
-      "Read(sim/tests/task1_tests.rs)",
-      "Read(sim/tests/task2_tests.rs)",
-      "Read(SOLUTIONS.md)"
-    ]
-  }
-}
