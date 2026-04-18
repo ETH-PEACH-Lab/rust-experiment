@@ -159,6 +159,33 @@ fn run_tests(state: Arc<Mutex<TestRun>>, workspace: String) {
     });
 }
 
+// ── Plant Lab runner ──────────────────────────────────────────────────────────
+
+/// Run `cargo run --example lab -- <m> <f> <t>` and return the JSON output.
+/// On compile/runtime error, returns a JSON object with color:null and an error field.
+fn run_lab(workspace: &str, m: f64, f: f64, t: f64) -> String {
+    let output = Command::new("cargo")
+        .args(["run", "--quiet", "--example", "lab", "--", &m.to_string(), &f.to_string(), &t.to_string()])
+        .current_dir(workspace)
+        .output();
+
+    match output {
+        Ok(out) if out.status.success() => {
+            let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            if stdout.is_empty() { r#"{"color":null}"#.to_string() } else { stdout }
+        }
+        Ok(out) => {
+            let stderr = String::from_utf8_lossy(&out.stderr);
+            let first = stderr.lines()
+                .find(|l| l.contains("error"))
+                .unwrap_or("compile error")
+                .replace('"', "'");
+            format!(r#"{{"color":null,"error":"{}"}}"#, &first[..first.len().min(120)])
+        }
+        Err(e) => format!(r#"{{"color":null,"error":"{}"}}"#, e),
+    }
+}
+
 // ── HTTP handler ──────────────────────────────────────────────────────────────
 
 fn handle(mut stream: TcpStream, state: Arc<Mutex<TestRun>>, workspace: String) {
@@ -177,6 +204,27 @@ fn handle(mut stream: TcpStream, state: Arc<Mutex<TestRun>>, workspace: String) 
 
     } else if first_line.starts_with("GET /api/results") {
         let body = state.lock().unwrap().to_json();
+        let resp = format!(
+            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+            body.len(), body);
+        let _ = stream.write_all(resp.as_bytes());
+
+    } else if first_line.starts_with("GET /api/lab") {
+        // Parse ?m=..&f=..&t=.. from the request line
+        let parse_param = |key: &str, default: f64| -> f64 {
+            let needle = format!("{}=", key);
+            first_line.find(&needle)
+                .and_then(|pos| {
+                    let rest = &first_line[pos + needle.len()..];
+                    let end  = rest.find(|c: char| c == '&' || c == ' ').unwrap_or(rest.len());
+                    rest[..end].parse().ok()
+                })
+                .unwrap_or(default)
+        };
+        let m = parse_param("m", 0.5);
+        let f = parse_param("f", 1.0);
+        let t = parse_param("t", 22.0);
+        let body = run_lab(&workspace, m, f, t);
         let resp = format!(
             "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
             body.len(), body);

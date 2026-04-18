@@ -50,6 +50,128 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
 .task-panel { display:none; }
 .task-panel.active { display:block; }
 
+/* ── Plant Lab (Task 3) ── */
+.lab-bed {
+  position: relative; width: 100%; height: 200px; overflow: hidden;
+  background: linear-gradient(180deg, #87ceeb 0%, #b8dcf0 62%, #7a5530 62%, #5a3820 100%);
+}
+
+/* Seed dot in soil */
+.lab-seed {
+  position: absolute; bottom: 76px; left: 50%; transform: translateX(-50%);
+  width: 10px; height: 10px; border-radius: 50%; background: #9a7040;
+  opacity: 1; transition: opacity 0.5s; z-index: 3;
+}
+.lab-seed.hidden { opacity: 0; }
+
+/* Plant column — flex column with flower at top, stem at bottom */
+.lab-plant {
+  position: absolute; bottom: 76px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center;
+  isolation: isolate; /* new stacking context so z-indices below are self-contained */
+}
+
+/* Stem grows upward */
+.lab-stem {
+  width: 6px; border-radius: 3px 3px 0 0;
+  background: linear-gradient(to right, #2d5e2a, #4a9b5f, #2d5e2a);
+  height: 0; transition: height 1.2s ease;
+}
+.lab-stem.grown { height: 72px; }
+
+/* Leaves — 6px wide anchor sits flush on the stem, leaves extend outward */
+.lab-leaves {
+  position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
+  width: 6px; height: 10px;  /* same width as the stem */
+  opacity: 0; transition: opacity 0.7s;
+  z-index: 1; /* below flower (z-index: 2) */
+}
+.lab-leaves.show { opacity: 1; }
+.lab-leaf {
+  position: absolute; top: 0;
+  width: 18px; height: 9px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #5ab870, #2d6b40);
+}
+/* Left leaf: right edge glued to stem left edge, tip tilts upward */
+.lab-leaf.left {
+  right: 100%;
+  transform-origin: right center;
+  transform: rotate(30deg);
+}
+/* Right leaf: left edge glued to stem right edge, tip tilts upward */
+.lab-leaf.right {
+  left: 100%;
+  transform-origin: left center;
+  transform: rotate(-30deg);
+}
+
+/* Sizer wrapper — handles user's custom scale independently of bloom animation */
+.lab-flower-sizer {
+  transition: transform 0.5s ease;
+  margin-bottom: -20px; /* pull stem up to meet petal center */
+  position: relative; z-index: 2; /* always above leaves (z-index: 1) */
+}
+
+/* Flower head — bloom pop-in animation only, no size here */
+.lab-flower-head {
+  position: relative; width: 40px; height: 40px;
+  opacity: 0; transform: scale(0.15);
+  transition: opacity 0.8s, transform 0.8s;
+}
+.lab-flower-head.bloom { opacity: 1; transform: scale(1); }
+
+/* Petals — JS sets rotation and background per petal */
+.lab-petal {
+  position: absolute;
+  width: 11px; height: 20px; border-radius: 50%;
+  top: 0; left: 14.5px;         /* center horizontally: (40-11)/2 */
+  transform-origin: 5.5px 20px; /* bottom-center = rotation axis */
+  box-shadow: inset 0 -2px 4px rgba(0,0,0,0.12);
+}
+
+/* Center button — color set by JS */
+.lab-flower-center {
+  position: absolute; width: 14px; height: 14px; border-radius: 50%;
+  background: radial-gradient(circle, #8b5a2b, #5c3a1e);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  top: 13px; left: 13px; z-index: 2;
+}
+
+/* "No plant" message */
+.lab-no-plant {
+  position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%);
+  font-size: 10px; color: var(--text-d); opacity: 0.65; z-index: 2; text-align: center;
+  pointer-events: none;
+}
+
+/* Day counter ticker */
+.lab-days {
+  position: absolute; top: 6px; right: 8px;
+  font-size: 9px; color: rgba(255,255,255,0.75); z-index: 4;
+}
+
+.lab-controls { padding: 10px 12px 4px; }
+.lab-row {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+}
+.lab-label { width: 68px; color: var(--text-d); font-size: 10px; flex-shrink: 0; }
+.lab-slider { flex: 1; accent-color: var(--green-d); cursor: pointer; }
+.lab-val { width: 42px; text-align: right; font-size: 10px; color: var(--text); }
+.lab-status {
+  margin-top: 8px; padding: 6px 8px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 4px;
+  font-size: 10px; color: var(--text-d); min-height: 30px;
+  word-break: break-word;
+}
+
+@keyframes lab-day-tick {
+  0%   { opacity: 0; transform: translateY(4px); }
+  15%  { opacity: 1; transform: translateY(0);   }
+  85%  { opacity: 1; transform: translateY(0);   }
+  100% { opacity: 0; transform: translateY(-4px);}
+}
+
 /* ── Scene ── */
 .scene {
   position: relative; width: 100%; height: 210px; overflow: hidden;
@@ -368,8 +490,9 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
 
 <!-- Tabs -->
 <div class="tabs">
-  <button class="tab active" id="tab1" onclick="switchTab(1)">Task 1 — Bugs</button>
-  <button class="tab"        id="tab2" onclick="switchTab(2)">Task 2 — Features</button>
+  <button class="tab active" id="tab1" onclick="switchTab(1)">Task 1</button>
+  <button class="tab"        id="tab2" onclick="switchTab(2)">Task 2</button>
+  <button class="tab"        id="tab3" onclick="switchTab(3)">Task 3</button>
 </div>
 
 <!-- ════ TASK 1 ════ -->
@@ -621,6 +744,60 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
   </div>
 </div><!-- /panel2 -->
 
+<!-- ════ TASK 3 — Plant Lab ════ -->
+<div class="task-panel" id="panel3">
+
+  <!-- Scene: sky + soil, plant grows here -->
+  <div class="lab-bed" id="lab-bed">
+    <div class="lab-days" id="lab-days"></div>
+    <div class="lab-seed" id="lab-seed"></div>
+    <div class="lab-plant" id="lab-plant">
+      <!-- Sizer scales the flower; inner div handles the bloom pop-in -->
+      <div class="lab-flower-sizer" id="lab-flower-sizer">
+        <div class="lab-flower-head" id="lab-flower-head">
+          <!-- petals injected by JS -->
+          <div class="lab-flower-center" id="lab-flower-center"></div>
+        </div>
+      </div>
+      <div class="lab-leaves" id="lab-leaves">
+        <div class="lab-leaf left"></div>
+        <div class="lab-leaf right"></div>
+      </div>
+      <div class="lab-stem" id="lab-stem"></div>
+    </div>
+    <div class="lab-no-plant" id="lab-no-plant">No plant grew here</div>
+  </div>
+
+  <!-- Sliders -->
+  <div class="lab-controls">
+    <div class="lab-row">
+      <label class="lab-label">Moisture</label>
+      <input class="lab-slider" type="range" id="lab-m" min="0" max="1" step="0.01" value="0.5"
+        oninput="el('lab-m-val').textContent=parseFloat(this.value).toFixed(2)">
+      <span class="lab-val" id="lab-m-val">0.50</span>
+    </div>
+    <div class="lab-row">
+      <label class="lab-label">Fertilizer</label>
+      <input class="lab-slider" type="range" id="lab-f" min="1" max="3" step="0.01" value="1.0"
+        oninput="el('lab-f-val').textContent=parseFloat(this.value).toFixed(2)">
+      <span class="lab-val" id="lab-f-val">1.00</span>
+    </div>
+    <div class="lab-row">
+      <label class="lab-label">Temperature</label>
+      <input class="lab-slider" type="range" id="lab-t" min="0" max="40" step="0.1" value="22"
+        oninput="el('lab-t-val').textContent=parseFloat(this.value).toFixed(1)+'°C'">
+      <span class="lab-val" id="lab-t-val">22.0°C</span>
+    </div>
+
+    <div class="run-wrap">
+      <button class="run-btn" id="lab-run-btn" onclick="runLab()">▶ Run Lab</button>
+    </div>
+
+    <div class="lab-status" id="lab-status">Adjust sliders then click Run Lab.</div>
+  </div>
+
+</div><!-- /panel3 -->
+
 </div><!-- /#root -->
 
 <script>
@@ -650,7 +827,7 @@ function switchTab(n) {
   if (n === 1) {
     renderCanPreview();
   } else {
-    // Switching to Task 2 — clean up any leftover Task 1 visual state
+    // Switching away from Task 1 — clean up visual state
     stopPhysics();
     resetSun();
     el('thermometer').className  = 'thermometer';
@@ -661,6 +838,126 @@ function switchTab(n) {
     setScene('day');
     setMsg('');
   }
+}
+
+// ── Plant Lab ────────────────────────────────────────────────────────────────
+
+function labReset() {
+  el('lab-seed').classList.remove('hidden');
+  el('lab-stem').classList.remove('grown');
+  el('lab-leaves').classList.remove('show');
+  el('lab-flower-head').classList.remove('bloom');
+  el('lab-flower-sizer').style.transform = 'scale(1)';
+  el('lab-leaves').style.bottom = '28px';
+  el('lab-leaves').style.transform = 'translateX(-50%) scale(1)';
+  el('lab-leaves').style.zIndex = '1';
+  el('lab-leaves').querySelectorAll('.lab-leaf').forEach(l => l.style.background = '#4a9b5f');
+  el('lab-stem').style.background = 'linear-gradient(to right, #2d5e2a, #4a9b5f, #2d5e2a)';
+  el('lab-no-plant').style.opacity = '0';
+  el('lab-days').textContent = '';
+}
+
+function renderPetals(flower) {
+  const head   = el('lab-flower-head');
+  const center = el('lab-flower-center');
+
+  // Remove old petals, keep center dot
+  head.querySelectorAll('.lab-petal').forEach(p => p.remove());
+
+  const count = Math.max(3, Math.min(12, flower.petals));
+  const solid = flower.tip === flower.color;
+
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'lab-petal';
+    // Two-tone gradient from base (color) at root to tip color at top
+    p.style.background = solid
+      ? flower.color
+      : `linear-gradient(to top, ${flower.color}, ${flower.tip})`;
+    p.style.transform = `rotate(${i * (360 / count)}deg)`;
+    head.insertBefore(p, center);
+  }
+
+  // Apply center color with a radial gradient for depth
+  center.style.background =
+    `radial-gradient(circle, ${flower.center}cc, ${flower.center})`;
+}
+
+async function labGrow(flower) {
+  const days = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'];
+  const tickDelay = 280;
+
+  // Pre-compute leaf bottom position so it's correct when leaves appear
+  const leafBottom = 8 + (flower.leaf_pos ?? 0.35) * 56;
+
+  for (let i = 0; i < days.length; i++) {
+    el('lab-days').textContent = days[i];
+    el('lab-days').style.animation = 'none';
+    void el('lab-days').offsetWidth;
+    el('lab-days').style.animation = `lab-day-tick ${tickDelay * 2}ms ease forwards`;
+    await sleep(tickDelay);
+
+    if (i === 1) {
+      el('lab-seed').classList.add('hidden');
+    }
+    if (i === 2) {
+      // Apply stem color before it grows into view
+      el('lab-stem').style.background = flower.stem_color || '#3d7a3a';
+      el('lab-stem').classList.add('grown');
+    }
+    if (i === 4) {
+      // Position, size, color, and layer all set before leaves fade in
+      el('lab-leaves').style.bottom = leafBottom + 'px';
+      el('lab-leaves').style.transform = `translateX(-50%) scale(${flower.leaf_size || 1})`;
+      el('lab-leaves').style.zIndex = flower.leaf_above ? '3' : '1';
+      el('lab-leaves').querySelectorAll('.lab-leaf').forEach(l => l.style.background = flower.leaf_color || '#4a9b5f');
+      el('lab-leaves').classList.add('show');
+    }
+  }
+
+  // Bloom: render petals, pop in, then scale flower to user's size
+  renderPetals(flower);
+  el('lab-flower-head').classList.add('bloom');
+  await sleep(850);
+  el('lab-flower-sizer').style.transform = `scale(${flower.size})`;
+  el('lab-days').textContent = '';
+}
+
+async function runLab() {
+  const btn = el('lab-run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Compiling…';
+  el('lab-status').textContent = 'Running cargo… (first run may take ~10 s)';
+
+  const m = parseFloat(el('lab-m').value);
+  const f = parseFloat(el('lab-f').value);
+  const t = parseFloat(el('lab-t').value);
+
+  try {
+    const res  = await fetch(`/api/lab?m=${m}&f=${f}&t=${t}`);
+    const data = await res.json();
+
+    labReset();
+    await sleep(300); // brief pause to let reset settle
+
+    if (data.error) {
+      el('lab-status').textContent = '⚠ ' + data.error;
+      el('lab-no-plant').style.opacity = '0.65';
+    } else if (data.color) {
+      btn.textContent = '⏳ Growing…';
+      await labGrow(data);
+      el('lab-status').textContent =
+        `${data.color} | tip: ${data.tip} | ${data.petals} petals | size ×${data.size}  (m=${m.toFixed(2)}, f=${f.toFixed(2)}, t=${t.toFixed(1)}°C)`;
+    } else {
+      el('lab-no-plant').style.opacity = '0.65';
+      el('lab-status').textContent = 'No plant grew here. Try different slider values or check your conditions in garden_lab.rs.';
+    }
+  } catch(e) {
+    el('lab-status').textContent = 'Network error: ' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run Lab';
 }
 
 // ── Clock ────────────────────────────────────────────────────────────────────
