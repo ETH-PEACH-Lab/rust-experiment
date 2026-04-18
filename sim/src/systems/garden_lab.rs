@@ -172,46 +172,10 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
     }
 
     // TODO #1 ─────────────────────────────────────────────────────────────────
-    // Copy either example above, change the conditions and all ten Flower fields.
-    //
-    // if moisture >= ??? && moisture <= ???
-    //     && fertilizer >= ???
-    //     && temperature >= ??? && temperature <= ???
-    // {
-    //     return Some(Flower {
-    //         color:      "???",
-    //         tip:        "???",
-    //         petals:     ???,
-    //         size:       ???,
-    //         center:     "???",
-    //         leaf_size:  ???,
-    //         leaf_color: "???",
-    //         stem_color: "???",
-    //         leaf_pos:   ???,
-    //         leaf_above: ???,
-    //     });
-    // }
+    // Create a new flower from different growing conditions.
 
     // TODO #2 ─────────────────────────────────────────────────────────────────
-    // Add a second plant variant here.
-    //
-    // if moisture >= ??? && moisture <= ???
-    //     && fertilizer >= ???
-    //     && temperature >= ??? && temperature <= ???
-    // {
-    //     return Some(Flower {
-    //         color:      "???",
-    //         tip:        "???",
-    //         petals:     ???,
-    //         size:       ???,
-    //         center:     "???",
-    //         leaf_size:  ???,
-    //         leaf_color: "???",
-    //         stem_color: "???",
-    //         leaf_pos:   ???,
-    //         leaf_above: ???,
-    //     });
-    // }
+
 
     None // nothing grew — adjust conditions or sliders and try again
 }
