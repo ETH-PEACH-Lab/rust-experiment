@@ -8,8 +8,8 @@ fn main() {
 
     match classify(moisture, fertilizer, temperature) {
         Some(f) => println!(
-            "{{\"color\":\"{}\",\"tip\":\"{}\",\"petals\":{},\"size\":{},\"center\":\"{}\",\"leaf_size\":{},\"leaf_color\":\"{}\",\"stem_color\":\"{}\",\"leaf_pos\":{},\"leaf_above\":{}}}",
-            f.color, f.tip, f.petals, f.size, f.center, f.leaf_size, f.leaf_color, f.stem_color, f.leaf_pos, f.leaf_above
+            "{{\"name\":\"{}\",\"color\":\"{}\",\"tip\":\"{}\",\"petals\":{},\"size\":{},\"center\":\"{}\",\"leaf_size\":{},\"leaf_color\":\"{}\",\"stem_color\":\"{}\",\"leaf_pos\":{},\"leaf_above\":{}}}",
+            f.name, f.color, f.tip, f.petals, f.size, f.center, f.leaf_size, f.leaf_color, f.stem_color, f.leaf_pos, f.leaf_above
         ),
         None => println!("{{\"color\":null}}"),
     }

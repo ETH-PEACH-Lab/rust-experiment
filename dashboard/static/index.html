@@ -151,6 +151,14 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
   font-size: 9px; color: rgba(255,255,255,0.75); z-index: 4;
 }
 
+/* Text inside the soil */
+.lab-soil-text {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  font-size: 9px; color: rgba(255,255,255,0.45); z-index: 4;
+  text-align: center; pointer-events: none; white-space: nowrap;
+  transition: opacity 0.6s;
+}
+
 .lab-controls { padding: 10px 12px 4px; }
 .lab-row {
   display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
@@ -766,6 +774,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
       <div class="lab-stem" id="lab-stem"></div>
     </div>
     <div class="lab-no-plant" id="lab-no-plant">No plant grew here</div>
+    <div class="lab-soil-text" id="lab-soil-text">adjust sliders → click Run Lab</div>
   </div>
 
   <!-- Sliders -->
@@ -854,6 +863,8 @@ function labReset() {
   el('lab-leaves').querySelectorAll('.lab-leaf').forEach(l => l.style.background = '#4a9b5f');
   el('lab-stem').style.background = 'linear-gradient(to right, #2d5e2a, #4a9b5f, #2d5e2a)';
   el('lab-no-plant').style.opacity = '0';
+  el('lab-soil-text').textContent = 'adjust sliders → click Run Lab';
+  el('lab-soil-text').style.opacity = '1';
   el('lab-days').textContent = '';
 }
 
@@ -918,8 +929,11 @@ async function labGrow(flower) {
   // Bloom: render petals, pop in, then scale flower to user's size
   renderPetals(flower);
   el('lab-flower-head').classList.add('bloom');
+  el('lab-soil-text').style.opacity = '0'; // hide prompt while blooming
   await sleep(850);
   el('lab-flower-sizer').style.transform = `scale(${flower.size})`;
+  el('lab-soil-text').textContent = flower.name;
+  el('lab-soil-text').style.opacity = '1';
   el('lab-days').textContent = '';
 }
 
@@ -943,13 +957,15 @@ async function runLab() {
     if (data.error) {
       el('lab-status').textContent = '⚠ ' + data.error;
       el('lab-no-plant').style.opacity = '0.65';
+      el('lab-soil-text').textContent = 'compile error';
     } else if (data.color) {
       btn.textContent = '⏳ Growing…';
       await labGrow(data);
       el('lab-status').textContent =
-        `${data.color} | tip: ${data.tip} | ${data.petals} petals | size ×${data.size}  (m=${m.toFixed(2)}, f=${f.toFixed(2)}, t=${t.toFixed(1)}°C)`;
+        `Your seed grew into a ${data.name}!  (m=${m.toFixed(2)}, f=${f.toFixed(2)}, t=${t.toFixed(1)}°C)`;
     } else {
       el('lab-no-plant').style.opacity = '0.65';
+      el('lab-soil-text').textContent = 'nothing grew here';
       el('lab-status').textContent = 'No plant grew here. Try different slider values or check your conditions in garden_lab.rs.';
     }
   } catch(e) {

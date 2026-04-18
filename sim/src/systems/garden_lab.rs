@@ -13,30 +13,16 @@
 //
 // ─── Flower fields you can change ────────────────────────────────────────────
 //
+//   name    text — what to call your flower (shown in the dashboard when it blooms)
 //   color   hex string — petal base color
 //   tip     hex string — petal tip color (set the same as color for solid petals,
 //                        or pick a different color for a two-tone gradient)
-//   petals  whole number — how many petals:
-//             3  = sparse / windmill
-//             4  = cross / poppy
-//             5  = classic daisy
-//             6  = lily / tulip
-//             7  = sunflower
-//             8  = full rose
-//             10 = chrysanthemum
-//             12 = very full bloom
-//   size      decimal — how large the flower head is:
-//               0.6 = small bud
-//               1.0 = normal
-//               1.4 = large
-//               1.8 = giant
+//   petals  whole number — how many petals
+//   size      decimal — how large the flower head is
 //   center    hex string — color of the center dot
-//   leaf_size  decimal — how large the leaves are:
-//               0.5 = tiny
-//               1.0 = normal
-//               1.8 = large floppy leaves
-//   leaf_color hex string — leaf color (default forest green "#4a9b5f")
-//   stem_color hex string — stem color (default dark green "#3d7a3a")
+//   leaf_size  decimal — how large the leaves are
+//   leaf_color hex string — leaf color 
+//   stem_color hex string — stem color 
 //   leaf_pos   decimal — where on the stem the leaves appear:
 //               0.0 = near the soil
 //               0.5 = mid-stem (default)
@@ -93,33 +79,6 @@
 //   Taupe             "#8b8589"     Slate             "#708090"
 //   Charcoal          "#36454f"     Pearl             "#eae0c8"
 //
-// ─── EXAMPLE — read this carefully before filling in the TODOs ───────────────
-//
-//   if moisture    >= 0.5  && moisture    <= 0.8
-//       && fertilizer >= 1.5
-//       && temperature >= 22.0 && temperature <= 30.0
-//   {
-//       return Some(Flower {
-//           color:      "#ffd23f",  // sunshine yellow petals
-//           tip:        "#ffaa00",  // darker amber at the tip (two-tone)
-//           petals:     7,          // sunflower shape
-//           size:       1.0,        // normal flower size
-//           center:     "#8b5a2b",  // dark brown center
-//           leaf_size:  1.0,        // normal leaves
-//           leaf_color: "#4a9b5f",  // classic green leaves
-//           stem_color: "#3d7a3a",  // dark green stem
-//           leaf_pos:   0.35,       // leaves at lower-third of stem
-//           leaf_above: false,      // leaves behind the flower
-//       });
-//   }
-//
-//   Pattern:
-//     if <conditions>
-//     {
-//         return Some(Flower { color: "...", tip: "...", petals: N, size: S, center: "...",
-//                              leaf_size: L, leaf_color: "...", stem_color: "...",
-//                              leaf_pos: P, leaf_above: true/false });
-//     }
 //
 // ─── YOUR TASK ───────────────────────────────────────────────────────────────
 //
@@ -131,14 +90,13 @@
 //   Ideas:
 //     - Desert bloom : dry (0.0–0.2), hot (32–40), low fertilizer
 //                      → coral, tip: salmon, 4 petals, size 0.8, orange center
-//     - Swamp orchid : very wet (0.8–1.0), cool (8–16), heavy fertilizer
-//                      → lavender, tip: indigo, 6 petals, size 1.3, plum center
 //     - Frost rose   : cold (0–10), moderate moisture, high fertilizer
 //                      → crimson, tip: burgundy, 5 petals, size 1.2, dark center
 //
 // ─────────────────────────────────────────────────────────────────────────────
 
 pub struct Flower {
+    pub name:        &'static str,  // display name shown in the dashboard
     pub color:       &'static str,  // petal base color (hex)
     pub tip:         &'static str,  // petal tip color  (hex, same as color = solid)
     pub petals:      u8,            // number of petals (3–12)
@@ -158,6 +116,7 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
         && temperature >= 22.0 && temperature <= 30.0
     {
         return Some(Flower {
+            name:       "Sunflower",
             color:      "#ffd23f",
             tip:        "#ffaa00",
             petals:     5,
@@ -171,11 +130,8 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
         });
     }
 
-    // TODO #1 ─────────────────────────────────────────────────────────────────
-    // Create a new flower from different growing conditions.
-
-    // TODO #2 ─────────────────────────────────────────────────────────────────
-
+    // TODO ─────────────────────────────────────────────────────────────────
+    // Come up with a couple new flowers that grow from different growing conditions.
 
     None // nothing grew — adjust conditions or sliders and try again
 }
