@@ -130,8 +130,68 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
         });
     }
 
-    // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
+    //     - Desert bloom : dry (0.0–0.2), hot (32–40), low fertilizer
+    //                      → coral, tip: salmon, 4 petals, size 0.8, orange center
+    if moisture >= 0.0 && moisture <= 0.3
+        && fertilizer <= 1.8
+        && temperature >= 32.0 && temperature <= 40.0
+    {
+        return Some(Flower {
+            name:       "Desert Bloom",
+            color:      "#ff7f50",
+            tip:        "#fa8072",
+            petals:     4,
+            size:       0.8,
+            center:     "#ffa500",
+            leaf_size:  0.6,
+            leaf_color: "#6b8e23",
+            stem_color: "#8b7355",
+            leaf_pos:   0.7,
+            leaf_above: false,
+        });
+    }
+
+    //     - Frost rose   : cold (0–10), moderate moisture, high fertilizer
+    //                      → crimson, tip: burgundy, 5 petals, size 1.2, dark center
+    if moisture >= 0.4 && moisture <= 0.75
+        && fertilizer >= 2.2
+        && temperature >= 0.0 && temperature <= 15.0
+    {
+        return Some(Flower {
+            name:       "Frost Rose",
+            color:      "#c1121f",
+            tip:        "#800020",
+            petals:     5,
+            size:       1.2,
+            center:     "#36454f",
+            leaf_size:  1.3,
+            leaf_color: "#2d6a4f",
+            stem_color: "#1a472a",
+            leaf_pos:   0.4,
+            leaf_above: false,
+        });
+    }
+
+    // Twilight Orchid — mysterious bloom in moderate conditions
+    if moisture >= 0.35 && moisture <= 0.65
+        && fertilizer >= 1.8 && fertilizer <= 2.5
+        && temperature >= 18.0 && temperature <= 26.0
+    {
+        return Some(Flower {
+            name:       "Twilight Orchid",
+            color:      "#da70d6",
+            tip:        "#7b2d8b",
+            petals:     6,
+            size:       1.1,
+            center:     "#ccccff",
+            leaf_size:  1.0,
+            leaf_color: "#2d6a4f",
+            stem_color: "#556b2f",
+            leaf_pos:   0.5,
+            leaf_above: false,
+        });
+    }
 
     None // nothing grew — adjust conditions or sliders and try again
 }
