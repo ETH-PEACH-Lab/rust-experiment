@@ -161,6 +161,52 @@ fn run_tests(state: Arc<Mutex<TestRun>>, workspace: String) {
 
 // ── Plant Lab runner ──────────────────────────────────────────────────────────
 
+/// Parse static config flags from garden_lab.rs source — fast enough to poll.
+fn run_lab_config(workspace: &str) -> String {
+    let path = format!("{}/sim/src/systems/garden_lab.rs", workspace);
+    let src = std::fs::read_to_string(&path).unwrap_or_default();
+
+    // Look for `CAN_INTERACTIVE: bool = <true|false>`
+    let interactive = src.find("CAN_INTERACTIVE")
+        .and_then(|pos| {
+            let rest = &src[pos..];
+            rest.find('=').map(|eq| &rest[eq + 1..])
+        })
+        .map(|rest| {
+            let trimmed = rest.trim_start();
+            if trimmed.starts_with("true") { true }
+            else if trimmed.starts_with("false") { false }
+            else { true }
+        })
+        .unwrap_or(true);
+
+    format!(r#"{{"interactive":{}}}"#, interactive)
+}
+
+/// Run `cargo run --example lab -- check <dist>` and return physics JSON.
+fn run_lab_check(workspace: &str, dist: f64) -> String {
+    let output = Command::new("cargo")
+        .args(["run", "--quiet", "--example", "lab", "--", "check", &dist.to_string()])
+        .current_dir(workspace)
+        .output();
+
+    match output {
+        Ok(out) if out.status.success() => {
+            let s = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            if s.is_empty() { r#"{"tilt":0,"reaches":false}"#.to_string() } else { s }
+        }
+        Ok(out) => {
+            let stderr = String::from_utf8_lossy(&out.stderr);
+            let first = stderr.lines()
+                .find(|l| l.contains("error"))
+                .unwrap_or("compile error")
+                .replace('"', "'");
+            format!(r#"{{"tilt":0,"reaches":false,"error":"{}"}}"#, &first[..first.len().min(120)])
+        }
+        Err(e) => format!(r#"{{"tilt":0,"reaches":false,"error":"{}"}}"#, e),
+    }
+}
+
 /// Run `cargo run --example lab -- <m> <f> <t>` and return the JSON output.
 /// On compile/runtime error, returns a JSON object with color:null and an error field.
 fn run_lab(workspace: &str, m: f64, f: f64, t: f64) -> String {
@@ -204,6 +250,30 @@ fn handle(mut stream: TcpStream, state: Arc<Mutex<TestRun>>, workspace: String) 
 
     } else if first_line.starts_with("GET /api/results") {
         let body = state.lock().unwrap().to_json();
+        let resp = format!(
+            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+            body.len(), body);
+        let _ = stream.write_all(resp.as_bytes());
+
+    } else if first_line.starts_with("GET /api/lab/config") {
+        let body = run_lab_config(&workspace);
+        let resp = format!(
+            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+            body.len(), body);
+        let _ = stream.write_all(resp.as_bytes());
+
+    } else if first_line.starts_with("GET /api/lab/check") {
+        let dist = {
+            let needle = "dist=";
+            first_line.find(needle)
+                .and_then(|pos| {
+                    let rest = &first_line[pos + needle.len()..];
+                    let end  = rest.find(|c: char| c == '&' || c == ' ').unwrap_or(rest.len());
+                    rest[..end].parse().ok()
+                })
+                .unwrap_or(100.0_f64)
+        };
+        let body = run_lab_check(&workspace, dist);
         let resp = format!(
             "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
             body.len(), body);

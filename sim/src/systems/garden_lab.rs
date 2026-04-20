@@ -109,6 +109,26 @@ pub struct Flower {
     pub leaf_above:  bool,          // true = leaves render in FRONT of flower, false = behind
 }
 
+// ─── Watering mechanics ──────────────────────────────────────────────────────
+
+pub const CAN_INTERACTIVE: bool = false;
+
+// can_tilt_angle:
+//   Returns how many degrees the can should tip when poured.
+//
+// water_reaches:
+//   Returns true when the can is close enough that water reaches the seed.
+
+pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
+    (0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
+}
+
+pub fn water_reaches(distance_px: f64) -> bool {
+    distance_px > 120.0
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flower> {
     // EXAMPLE — Sunflower (already filled in; leave it or change it as you like)
     if moisture >= 0.5 && moisture <= 0.8
