@@ -1,6 +1,6 @@
 # Pixel Garden
 
-A Rust garden simulator. You have two tasks, each 20 minutes.
+A Rust garden simulator. You have three tasks, each 20 minutes.
 
 ---
 
@@ -70,6 +70,22 @@ cargo test -p garden-sim --test task2_tests
 
 ---
 
+## Task 3 — Plant Lab (20 min)
+
+Design your own flowers. Open `sim/src/systems/garden_lab.rs` — the file is full of comments that explain everything.
+
+You will define at least two plant variants. Each one specifies:
+- The **conditions** it needs to grow (moisture, fertilizer, temperature ranges)
+- How it **looks**: petal color, tip color, petal count, flower size, center color, leaf color, leaf size, leaf position on the stem, and stem color
+
+A worked example (a Sunflower) is already filled in so you can see the exact pattern to copy. There is no new syntax to learn — just change the numbers and hex color strings.
+
+To test: open the **Task 3 — Plant Lab** tab in the dashboard, move the sliders to match your conditions, and click **Run Lab**. The flower grows in real time. If nothing appears, your slider values are outside your defined ranges — adjust either the sliders or your conditions until it blooms.
+
+**Where to work:** `sim/src/systems/garden_lab.rs`
+
+---
+
 ## Project layout
 
 ```
@@ -78,6 +94,7 @@ sim/
     garden.rs          main simulation — Task 1
     systems/
       tree.rs          Task 2
+      garden_lab.rs    Task 3
       fertilizer.rs
       pests.rs
   tests/
