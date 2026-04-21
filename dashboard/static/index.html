@@ -1362,7 +1362,6 @@ async function triggerLabWater(canX, canY, finalAngle, dist) {
       labShowReset(true);
     }
   } catch(e) {
-    el('lab-status').textContent = 'Network error: ' + e.message;
     labShowReset(true);
   }
 }
