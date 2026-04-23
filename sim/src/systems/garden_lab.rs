@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -120,11 +120,11 @@ pub const CAN_INTERACTIVE: bool = false;
 //   Returns true when the can is close enough that water reaches the seed.
 
 pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
-    (0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
+    (0.2 + (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    distance_px > 20.0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -150,8 +150,56 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
         });
     }
 
+
+
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
+    //   Ideas:
+    //     - Desert bloom : dry (0.0–0.2), hot (32–40), low fertilizer
+    //                      → coral, tip: salmon, 4 petals, size 0.8, orange center
+
+    if moisture >= 0.0 && moisture <= 0.2
+        && fertilizer <= 1.5
+        && temperature >= 32.0 && temperature <= 40.0
+    {
+        return Some(Flower {
+            name:       "Desert bloom",
+            color:      "#ff7f50",
+            tip:        "#fa8072",
+            petals:     4,
+            size:       0.8,
+            center:     "#eb912a",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
+
+    //     - Frost rose   : cold (0–10), moderate moisture, high fertilizer
+    //                      → crimson, tip: burgundy, 5 petals, size 1.2, dark center
+    //
+
+     if moisture >= 0.20 && moisture <= 0.50
+        && fertilizer >= 2.4
+        && temperature >= 0 && temperature <= 10
+    {
+        return Some(Flower {
+            name:       "Frost rose",
+            color:      "#c1121f",
+            tip:        "#800020",
+            petals:     5,
+            size:       1.2,
+            center:     "#161514",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.50,
+            leaf_above: false,
+        });
+    }
+
 
     None // nothing grew — adjust conditions or sliders and try again
 }
