@@ -78,9 +78,11 @@ You will define at least two plant variants. Each one specifies:
 - The **conditions** it needs to grow (moisture, fertilizer, temperature ranges)
 - How it **looks**: petal color, tip color, petal count, flower size, center color, leaf color, leaf size, leaf position on the stem, and stem color
 
-A worked example (a Sunflower) is already filled in so you can see the exact pattern to copy. There is no new syntax to learn — just change the numbers and hex color strings.
+A worked example (a Sunflower) is already filled in. Pay attention to the code structures to get an idea of how to implement your vision for the flowers of your dreams (or nightmares)!
 
-To test: open the **Task 3 — Plant Lab** tab in the dashboard, move the sliders to match your conditions, and click **Run Lab**. The flower grows in real time. If nothing appears, your slider values are outside your defined ranges — adjust either the sliders or your conditions until it blooms.
+To test: open the **Task 3 — Plant Lab** tab in the dashboard, move the sliders to match your conditions, and try to drag the watering can over to the dry part of the soil. If you managed to implement the watering can logic to work correctly, then it will begin to grow the flower. If the dry spot has been watered but nothing grows, your slider values are outside your defined ranges, so adjust either the sliders or your conditions until it blooms.
+
+A good working implementation should lead to correct watering can interactive usage as well as three or more flowers that grow in different conditions.
 
 **Where to work:** `sim/src/systems/garden_lab.rs`
 
