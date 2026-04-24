@@ -37,6 +37,7 @@ pub struct Bed {
     pub health:           f64,
     pub stage:            PlantStage,
     pub watering_active:  bool,
+    pub watering_manual:  bool,
     pub fertilizer_boost: f64,
     pub fertilizer_age:   f64,
 }
@@ -50,6 +51,7 @@ impl Bed {
             health:           1.0,
             stage:            PlantStage::Seed,
             watering_active:  false,
+            watering_manual:  false,
             fertilizer_boost: 1.0,
             fertilizer_age:   0.0,
         }
@@ -127,11 +129,11 @@ impl GardenState {
             can_x:           250.0,
             can_y:           40.0,
             can_angle:       -500.0,
-            c1_day_h:  8.0,  c1_dark_h: 5.0,  c1_lux: 0.5,
-            c2_day_h: 10.0,  c2_dark_h: 12.0,  c2_lux: 0.2,
-            c3_day_h:  17.0,  c3_dark_h: 13.0,  c3_lux: 0.5,
-            c4_day_h: 12.0,  c4_dark_h:  14.0,  c4_lux: 0.3,
-            c5_day_h:  9.0,  c5_dark_h: 12.0,  c5_lux: 0.7,
+            c1_day_h:  8.0,  c1_dark_h: 16.0,  c1_lux: 0.5,
+            c2_day_h: 10.0,  c2_dark_h: 14.0,  c2_lux: 0.2,
+            c3_day_h:  17.0,  c3_dark_h: 7.0,  c3_lux: 0.5,
+            c4_day_h: 12.0,  c4_dark_h:  12.0,  c4_lux: 0.3,
+            c5_day_h:  9.0,  c5_dark_h: 15.0,  c5_lux: 0.7,
             cycles_completed: 0,
         }
     }
@@ -144,7 +146,7 @@ impl GardenState {
         self.elapsed_seconds += dt;
 
         let solar_flux = self.sun_size * 40.0;
-        self.temperature = solar_flux + 273.15;
+        self.temperature = solar_flux;
 
         let temp_above_base = (self.temperature - 20.0).max(0.0);
         let evap_rate = EVAP_BASE + temp_above_base * 0.0003;
@@ -162,8 +164,27 @@ impl GardenState {
         let total_growth: f64 = cycles.iter().map(|c| c.growth_contribution()).sum();
         let light_ok = total_growth > 0.0;
 
+        // Auto-detect watering for bed 0 based on can position (unless manually overridden)
+        // Can is centered at can_x, can_y; bed 0 is visualized at (150, 100)
+        let can_reach_radius = 80.0;
+        let bed_center_x = 150.0;
+        let bed_center_y = 100.0;
+        let dist_to_bed_0 = ((self.can_x - bed_center_x).powi(2) + (self.can_y - bed_center_y).powi(2)).sqrt();
+        
+        // Set watering for each bed
         for bed in &mut self.beds {
-            let water_reaches = bed.watering_active && self.can_angle > 20.0 && self.can_x < 180.0;
+            if bed.id == 0 && !bed.watering_manual {
+                // Auto-detect for bed 0 only if not manually controlled
+                bed.watering_active = dist_to_bed_0 < can_reach_radius;
+            } else if bed.id != 0 {
+                // Other beds always respect the current watering_active state (manual only)
+                // No changes needed here
+            }
+            // If watering_manual is true, keep the manually set watering_active value
+        }
+
+        for bed in &mut self.beds {
+            let water_reaches = bed.watering_active;
             let water_in = if water_reaches { WATER_FLOW * dt } else { 0.0 };
             bed.moisture = (bed.moisture - evap_rate * dt + water_in).clamp(0.0, 1.0);
 
@@ -192,6 +213,10 @@ impl GardenState {
 
             if bed.fertilizer_boost > 1.0 {
                 bed.fertilizer_age += dt;
+                if bed.fertilizer_age > 300.0 {
+                    bed.fertilizer_boost = 1.0;
+                    bed.fertilizer_age = 0.0;
+                }
             }
         }
 
@@ -207,6 +232,7 @@ impl GardenState {
     pub fn set_watering(&mut self, bed_id: usize, active: bool) {
         if let Some(bed) = self.beds.get_mut(bed_id) {
             bed.watering_active = active;
+            bed.watering_manual = active;
         }
     }
 
