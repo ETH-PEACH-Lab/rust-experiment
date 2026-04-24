@@ -152,6 +152,44 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
+    pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flower> {
+    // EXAMPLE — Sunflower (already filled in; leave it or change it as you like)
+    if moisture >= 0.0 && moisture <= 0.2
+        && fertilizer >= 0.2
+        && temperature >= 32.0 && temperature <=40.0
+    {
+        return Some(Flower {
+            name:       "Desert bloom",
+            color:      "#ff7f50",
+            tip:        "#fa8072",
+            petals:     4,
+            size:       0.8,
+            center:     "#fd951e",
+            leaf_size:  2,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.8,
+            leaf_above: false,
+        });
 
+       pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flower> {
+    // EXAMPLE — Sunflower (already filled in; leave it or change it as you like)
+    if moisture >= 0.9 && moisture <= 1
+        && fertilizer >= 1.5
+        && temperature >= 20.0 && temperature <= 25.0
+    {
+        return Some(Flower {
+            name:       "Tuplis",
+            color:      "#c515f1",
+            tip:        "#ecf1ef",
+            petals:     8,
+            size:       2.0,
+            center:     "#defd2f",
+            leaf_size:  2,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.15,
+            leaf_above: false,
+        });     
     None // nothing grew — adjust conditions or sliders and try again
 }
