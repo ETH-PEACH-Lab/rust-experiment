@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -124,7 +124,7 @@ pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    distance_px < 180.0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -150,8 +150,42 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
         });
     }
 
-    // TODO ─────────────────────────────────────────────────────────────────
-    // Come up with a couple new flowers that grow from different growing conditions.
+    if moisture == 0.1
+        && fertilizer >= 2
+        && temperature == 40.0
+    {
+        return Some(Flower {
+            name:       "Dandylion",
+            color:      "#17d146",
+            tip:        "#c8ff00",
+            petals:     5,
+            size:       2.0,
+            center:     "#ffffff",
+            leaf_size:  1.5,
+            leaf_color: "#00ff40",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.5,
+            leaf_above: false,
+        });
+    }
+
+    if fertilizer == 0
+        && temperature == 13.0
+    {
+        return Some(Flower {
+            name:       "Rose",
+            color:      "#e60202",
+            tip:        "#ff3c00",
+            petals:     5,
+            size:       1.5,
+            center:     "#ffffff",
+            leaf_size:  1.3,
+            leaf_color: "#078126",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.5,
+            leaf_above: false,
+        });
+    }
 
     None // nothing grew — adjust conditions or sliders and try again
 }
