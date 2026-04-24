@@ -81,24 +81,24 @@ fn garden_has_code(workspace: &str, snippet: &str) -> bool {
 }
 
 fn garden_state_json(workspace: &str) -> String {
-    let can_x      = read_garden_value(workspace, "can_x:",      240.0);
-    let can_y      = read_garden_value(workspace, "can_y:",       20.0);
-    let can_angle  = read_garden_value(workspace, "can_angle:",  -30.0);
+    let can_x      = read_garden_value(workspace, "can_x:",      60.0);
+    let can_y      = read_garden_value(workspace, "can_y:",       40.0);
+    let can_angle  = read_garden_value(workspace, "can_angle:",   45.0);
     let c1d = read_garden_value(workspace, "c1_day_h:",   8.0);
-    let c1k = read_garden_value(workspace, "c1_dark_h:", 10.0);
-    let c1l = read_garden_value(workspace, "c1_lux:",     0.6);
+    let c1k = read_garden_value(workspace, "c1_dark_h:", 16.0);
+    let c1l = read_garden_value(workspace, "c1_lux:",     0.5);
     let c2d = read_garden_value(workspace, "c2_day_h:", 10.0);
-    let c2k = read_garden_value(workspace, "c2_dark_h:", 12.0);
-    let c2l = read_garden_value(workspace, "c2_lux:",     0.5);
-    let c3d = read_garden_value(workspace, "c3_day_h:",   7.0);
-    let c3k = read_garden_value(workspace, "c3_dark_h:", 11.0);
-    let c3l = read_garden_value(workspace, "c3_lux:",     0.7);
+    let c2k = read_garden_value(workspace, "c2_dark_h:", 14.0);
+    let c2l = read_garden_value(workspace, "c2_lux:",     0.2);
+    let c3d = read_garden_value(workspace, "c3_day_h:",  17.0);
+    let c3k = read_garden_value(workspace, "c3_dark_h:",  7.0);
+    let c3l = read_garden_value(workspace, "c3_lux:",     0.5);
     let c4d = read_garden_value(workspace, "c4_day_h:", 12.0);
-    let c4k = read_garden_value(workspace, "c4_dark_h:",  9.0);
-    let c4l = read_garden_value(workspace, "c4_lux:",     0.4);
+    let c4k = read_garden_value(workspace, "c4_dark_h:", 12.0);
+    let c4l = read_garden_value(workspace, "c4_lux:",     0.3);
     let c5d = read_garden_value(workspace, "c5_day_h:",   9.0);
-    let c5k = read_garden_value(workspace, "c5_dark_h:", 13.0);
-    let c5l = read_garden_value(workspace, "c5_lux:",     0.6);
+    let c5k = read_garden_value(workspace, "c5_dark_h:", 15.0);
+    let c5l = read_garden_value(workspace, "c5_lux:",     0.7);
     // Bug 3 is fixed when the Kelvin offset is removed from the temperature formula
     let temp_fixed = !garden_has_code(workspace, "273.15");
     format!(

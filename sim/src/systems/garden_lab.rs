@@ -124,7 +124,7 @@ pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    distance_px < 120.0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -148,7 +148,39 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
             leaf_pos:   0.35,
             leaf_above: false,
         });
+    } 
+    if temperature >= 32 && fertilizer <= 1.5 && moisture >= 1.5
+        {
+        return Some(Flower {
+            name:       "Desert",
+            color:      "#ffe590",
+            tip:        "#00fff2",
+            petals:     8,
+            size:       3.0,
+            center:     "#584737",
+            leaf_size:  1,
+            leaf_color: "#8eaf97",
+            stem_color: "#95ff90",
+            leaf_pos:   0.5,
+            leaf_above: true,
+        });
     }
+    if temperature <= 4 && fertilizer >= 2 && moisture <= 5.5 && fertilizer <= 2.5
+    {
+    return Some(Flower {
+        name:       "Frost",
+        color:      "#b7c2ff",
+        tip:        "#9cfffa",
+        petals:     6,
+        size:       1.0,
+        center:     "#d7fffd",
+        leaf_size:  1,
+        leaf_color: "#8eaf97",
+        stem_color: "#95ff90",
+        leaf_pos:   2,
+        leaf_above: false,
+    });
+}
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
