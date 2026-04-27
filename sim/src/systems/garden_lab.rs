@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -124,7 +124,7 @@ pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    distance_px < 120.0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -149,7 +149,40 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
             leaf_above: false,
         });
     }
+    else if moisture < 0.5 && moisture >= 0.4 && temperature >= 22.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "Red flower",
+            color:      "#c1121f",
+            tip:        "#c04000",
+            petals:     8,
+            size:       1.3,
+            center:     "#f4a100",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
 
+    else if moisture < 0.4 &&  temperature <= 11.0 && fertilizer < 1.2
+    {   
+        return Some(Flower{
+            name:       "cornflower",
+            color:      "#6495ed",
+            tip:        "#6495ed",
+            petals:     16,
+            size:       0.7,
+            center:     "#fff44f",
+            leaf_size:  1.5,
+            leaf_color: "#93c572",
+            stem_color: "#355e3b",
+            leaf_pos:   0.35,
+            leaf_above: true,
+    
+        });
+    }
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
 
