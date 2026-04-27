@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -120,11 +120,11 @@ pub const CAN_INTERACTIVE: bool = false;
 //   Returns true when the can is close enough that water reaches the seed.
 
 pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
-    (0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
+    (0.2 + (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    distance_px < 120.0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -149,6 +149,45 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
             leaf_above: false,
         });
     }
+
+    if moisture >= 0.7 && moisture <= 0.9
+        && fertilizer >= 2.0
+        && temperature >= 12.0 && temperature <= 20.0
+    {
+        return Some(Flower {
+            name:       "myFlower",
+            color:      "#7b2d8b",
+            tip:        "#9e7bb5",
+            petals:     10,
+            size:       1.0,
+            center:     "#eae0c8",
+            leaf_size:  1.0,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.75,
+            leaf_above: false,
+        });
+    }
+
+    if moisture >= 0.7 && moisture <= 0.9
+        && fertilizer >= 2.5
+        && temperature >= 2.0 && temperature <= 10.0
+    {
+        return Some(Flower {
+            name:       "coldFlower",
+            color:      "#4682b4",
+            tip:        "#d0eeff",
+            petals:     20,
+            size:       2.0,
+            center:     "#90e0ef",
+            leaf_size:  0.9,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.3,
+            leaf_above: false,
+        });
+    }
+
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
