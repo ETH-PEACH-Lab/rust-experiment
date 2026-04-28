@@ -142,9 +142,9 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
             petals:     5,
             size:       2.0,
             center:     "#8b5a2b",
-            leaf_size:  1.5,
-            leaf_color: "#4a9b5f",
-            stem_color: "#3d7a3a",
+            leaf_size:  1.0,
+            leaf_color: "#d42d2d",
+            stem_color: "#cc9747",
             leaf_pos:   0.35,
             leaf_above: false,
         });
@@ -152,6 +152,42 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
+    if moisture >= 0.1 && moisture <= 0.2
+        && fertilizer <= 2.0 
+        && temperature >= 25.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "greenredktus",
+            color:      "#a8e755",
+            tip:        "#a5da14",
+            petals:     20,
+            size:       5.0,
+            center:     "#8af1c7",
+            leaf_size:  1.5,
+            leaf_color: "#e65d1e",
+            stem_color: "#dd8d15",
+            leaf_pos:   0.6,
+            leaf_above: true,
+        });
+    }
 
+    if moisture >= 0.8 && moisture <= 0.9
+        && fertilizer <= 1.5 
+        && temperature >= 0.0 && temperature <= 10.0
+    {
+        return Some(Flower {
+            name:       "purjack",
+            color:      "#1f52df",
+            tip:        "#79a9e0",
+            petals:     50,
+            size:       10.0,
+            center:     "#d35db9",
+            leaf_size:  20.0,
+            leaf_color: "#cd12f3",
+            stem_color: "#cf3d9f",
+            leaf_pos:   1.0,
+            leaf_above: false,
+        });
+    }    
     None // nothing grew — adjust conditions or sliders and try again
 }
