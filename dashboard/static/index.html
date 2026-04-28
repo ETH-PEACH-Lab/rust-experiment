@@ -1047,7 +1047,7 @@ function labReset() {
   refreshLabConfig();
 }
 
-// ── Lab physics — full particle sim, reuses Task 1's math ────────────────────
+// ── Lab physics — SIMPLIFIED particle sim using basic physics ────────────────
 let labPhysicsActive = false;
 let labPhysicsRAF    = null;
 
@@ -1072,22 +1072,15 @@ function runLabWaterPhysics(canX, canY, startAngleDeg, finalAngleDeg, seedRectFn
       if (labPhysicsActive) { labPhysicsActive = false; resolve({ hit: hitSeed }); }
     }, 6000);
 
-    // Spawn 20 particles inside the can
+    // SIMPLIFIED: Spawn particles directly at spout tip in world space
     const particles = [];
-    for (let i = 0; i < 20; i++) {
-      particles.push({
-        lx: CAN.innerX + 4 + Math.random() * (CAN.innerW - 8),
-        ly: CAN.innerY + 4 + Math.random() * (CAN.innerH - 8),
-        vlx: (Math.random() - 0.5) * 20,
-        vly: (Math.random() - 0.5) * 20,
-        free: false, spout: false, spoutT: 0,
-        wx: 0, wy: 0, wvx: 0, wvy: 0
-      });
-    }
-
+    const SPAWN_COUNT = 30;
+    const PARTICLE_LIFETIME = 3.0;
+    
     let lastTs  = null;
     let hitSeed = false;
     let elapsed = 0;
+    let spawnCounter = 0;
     labPhysicsActive = true;
 
     function frame(ts) {
@@ -1110,12 +1103,30 @@ function runLabWaterPhysics(canX, canY, startAngleDeg, finalAngleDeg, seedRectFn
           elapsed += dt;
         }
 
-        const lgx = GRAVITY_WORLD * Math.sin(angleRad);
-        const lgy = GRAVITY_WORLD * Math.cos(angleRad);
+        const GRAVITY_DOWN = 520;
+
+        // Spawn particles during pouring phase
+        if (!tipping && spawnCounter < SPAWN_COUNT && elapsed < 1.5) {
+          spawnCounter++;
+          const tipRotated = rotPt(CAN.spoutTip.x, CAN.spoutTip.y, angleRad);
+          const tipWorldX = canX + tipRotated.x;
+          const tipWorldY = canY + tipRotated.y;
+          const spoutDir = { x: CAN.spoutTip.x - CAN.spoutBase.x, y: CAN.spoutTip.y - CAN.spoutBase.y };
+          const len = Math.hypot(spoutDir.x, spoutDir.y);
+          const dirRotated = rotPt(spoutDir.x / len, spoutDir.y / len, angleRad);
+          const initialSpeed = 150;
+          particles.push({
+            x: tipWorldX + (Math.random() - 0.5) * 8,
+            y: tipWorldY + (Math.random() - 0.5) * 8,
+            vx: dirRotated.x * initialSpeed + (Math.random() - 0.5) * 40,
+            vy: dirRotated.y * initialSpeed + (Math.random() - 0.5) * 40,
+            age: 0
+          });
+        }
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw the can (same code as Task 1 physics)
+        // Draw the can
         ctx.save();
         ctx.translate(canX, canY);
         ctx.rotate(angleRad);
@@ -1149,90 +1160,40 @@ function runLabWaterPhysics(canX, canY, startAngleDeg, finalAngleDeg, seedRectFn
 
         ctx.fillStyle = 'rgba(255,255,255,0.2)';
         ctx.fillRect(CAN.bodyX + 4, CAN.bodyY + 3, 12, 4);
-
-        // Interior particles
-        ctx.fillStyle = '#7ab8e0';
-        for (const p of particles) {
-          if (p.free || p.spout) continue;
-          p.vlx += lgx * dt;
-          p.vly += lgy * dt;
-          p.lx  += p.vlx * dt;
-          p.ly  += p.vly * dt;
-          if (p.lx >= CAN.exitX - 1 && p.ly >= CAN.exitY - 1) {
-            p.spout = true; p.spoutT = 0; continue;
-          }
-          if (p.lx < CAN.innerX)              { p.lx = CAN.innerX;              p.vlx =  Math.abs(p.vlx) * 0.4; }
-          if (p.lx > CAN.innerX + CAN.innerW) { p.lx = CAN.innerX + CAN.innerW; p.vlx = -Math.abs(p.vlx) * 0.4; }
-          if (p.ly < CAN.innerY)              { p.ly = CAN.innerY;              p.vly =  Math.abs(p.vly) * 0.4; }
-          if (p.ly > CAN.innerY + CAN.innerH) { p.ly = CAN.innerY + CAN.innerH; p.vly = -Math.abs(p.vly) * 0.4; }
-          ctx.beginPath();
-          ctx.arc(p.lx, p.ly, 2.5, 0, Math.PI * 2);
-          ctx.fill();
-        }
         ctx.restore();
 
-        // Spout tube particles
-        const TUBE_LEN = Math.hypot(
-          CAN.spoutTip.x - CAN.spoutBase.x,
-          CAN.spoutTip.y - CAN.spoutBase.y);
-        const TUBE_SPD = 180;
-
-        ctx.save();
-        ctx.translate(canX, canY);
-        ctx.rotate(angleRad);
-        ctx.fillStyle = '#6ab0e0';
-        for (const p of particles) {
-          if (!p.spout) continue;
-          p.spoutT = Math.min(p.spoutT + TUBE_SPD * dt / TUBE_LEN, 1);
-          const lx = CAN.spoutBase.x + (CAN.spoutTip.x - CAN.spoutBase.x) * p.spoutT;
-          const ly = CAN.spoutBase.y + (CAN.spoutTip.y - CAN.spoutBase.y) * p.spoutT;
-          ctx.beginPath();
-          ctx.arc(lx, ly, 2.5, 0, Math.PI * 2);
-          ctx.fill();
-          if (p.spoutT >= 1) {
-            const tipW = rotPt(CAN.spoutTip.x, CAN.spoutTip.y, angleRad);
-            const dx = CAN.spoutTip.x - CAN.spoutBase.x;
-            const dy = CAN.spoutTip.y - CAN.spoutBase.y;
-            const len = Math.hypot(dx, dy);
-            const dirW = rotPt(dx / len, dy / len, angleRad);
-            p.spout = false; p.free = true;
-            p.wx  = canX + tipW.x;
-            p.wy  = canY + tipW.y;
-            p.wvx = dirW.x * 120;
-            p.wvy = dirW.y * 120;
-          }
-        }
-        ctx.restore();
-
-        // Free-falling particles
-        const seedRect   = seedRectFn();
+        // Update particles in world space
+        const seedRect = seedRectFn();
         const canvasRect = canvas.getBoundingClientRect();
-        for (const p of particles) {
-          if (!p.free || p.dead) continue;
-          p.wvy += GRAVITY_WORLD * dt;
-          p.wx  += p.wvx * dt;
-          p.wy  += p.wvy * dt;
-          const pageX = canvasRect.left + p.wx;
-          const pageY = canvasRect.top  + p.wy;
+        ctx.fillStyle = '#6ab0e0';
+        
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.age += dt;
+          if (p.age > PARTICLE_LIFETIME) {
+            particles.splice(i, 1);
+            continue;
+          }
+          p.vy += GRAVITY_DOWN * dt;
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+          ctx.fill();
+          const pageX = canvasRect.left + p.x;
+          const pageY = canvasRect.top + p.y;
           if (!hitSeed &&
-              pageX > seedRect.left - 4 && pageX < seedRect.right  + 4 &&
-              pageY > seedRect.top  - 4 && pageY < seedRect.bottom + 4) {
+              pageX > seedRect.left - 5 && pageX < seedRect.right  + 5 &&
+              pageY > seedRect.top  - 5 && pageY < seedRect.bottom + 5) {
             hitSeed = true;
             el('lab-soil-patch').classList.add('wet');
           }
-          ctx.fillStyle = '#6ab0e0';
-          ctx.beginPath();
-          ctx.arc(p.wx, p.wy, 3, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        for (const p of particles) {
-          if (p.free && (p.wy > canvas.height + 10 || p.wx < -10 || p.wx > canvas.width + 10)) {
-            p.dead = true;
+          if (p.y > canvas.height + 50 || p.x < -50 || p.x > canvas.width + 50) {
+            particles.splice(i, 1);
           }
         }
 
-        const alive = particles.filter(p => !p.dead && (p.spout || !p.free || p.wy < canvas.height + 10)).length;
-        if (elapsed > 3.0 || alive === 0) {
+        if (elapsed > 3.5 || (particles.length === 0 && !tipping)) {
           labPhysicsActive = false;
           clearTimeout(failsafe);
           ctx.clearRect(0, 0, canvas.width, canvas.height);

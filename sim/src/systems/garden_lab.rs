@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -136,19 +136,57 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
         && temperature >= 22.0 && temperature <= 30.0
     {
         return Some(Flower {
-            name:       "Sunflower",
+            name:       "Flower1",
             color:      "#ffd23f",
-            tip:        "#ffaa00",
+            tip:        "#36454f",
             petals:     5,
+            size:       3.0,
+            center:     "#708090",
+            leaf_size:  2.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: true,
+        });
+    } else if moisture >= 0.8
+        && fertilizer >= 2.5
+        && temperature >= 2.0 && temperature <= 5.0
+    
+    {
+        return Some(Flower {
+            name:       "Sunflower",
+            color:      "#fffdd0",
+            tip:        "#ffaa00",
+            petals:     2,
             size:       2.0,
             center:     "#8b5a2b",
             leaf_size:  1.5,
-            leaf_color: "#4a9b5f",
+            leaf_color: "#6495ed",
             stem_color: "#3d7a3a",
             leaf_pos:   0.35,
             leaf_above: false,
         });
-    }
+
+    } else if moisture >= 0.8
+        && fertilizer >= 2.5
+        && temperature >= 1.0 && temperature <= 2.0
+    
+    {
+        return Some(Flower {
+            name:       "Flower2",
+            color:      "#fffdd0",
+            tip:        "#ffaa00",
+            petals:     10,
+            size:       1.0,
+            center:     "#8b5a2b",
+            leaf_size:  0.5,
+            leaf_color: "#6495ed",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.15,
+            leaf_above: false,
+        });
+
+    } 
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
