@@ -6,11 +6,10 @@ A Rust garden simulator. You have three tasks, each 20 minutes.
 
 ## Getting started
 
-**Launch the dashboard** (keep this running throughout):
+**Launch the dashboard** (already launched, keep this running throughout):
 ```bash
 cargo run -p dashboard
 ```
-A small window appears — move it to the right edge of your screen. Use the rest of the screen for your editor.
 
 **Run tests** (your main feedback loop):
 ```bash
