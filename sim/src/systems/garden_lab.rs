@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -120,11 +120,11 @@ pub const CAN_INTERACTIVE: bool = false;
 //   Returns true when the can is close enough that water reaches the seed.
 
 pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
-    (0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
+    (0.2 + (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    distance_px < 120.0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -152,6 +152,45 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
-
+    // EXAMPLE — Desert bloom (already filled in; leave it or change it as you like)
+    //   Ideas:
+//     - Desert bloom : dry (0.0–0.2), hot (32–40), low fertilizer
+//                      → coral, tip: salmon, 4 petals, size 0.8, orange center
+    if moisture >= 0.0 && moisture <= 0.2
+        && fertilizer >= 1.1
+        && temperature >= 32.0 && temperature <= 40.0
+    {
+        return Some(Flower {
+            name:       "Desert bloom",
+            color:      "#ff7f50",
+            tip:        "#fa8072",
+            petals:     4,
+            size:       0.8,
+            center:     "#fca044",
+            leaf_size:  0.8,
+            leaf_color: "#8a9a5b",
+            stem_color: "#355e3b",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
+    if moisture >= 0.3 && moisture <= 0.7
+        && fertilizer >= 2.3
+        && temperature >= 12.0 && temperature <= 19.0
+    {
+        return Some(Flower {
+            name:       "Purple flower",
+            color:      "#3a0ca3",
+            tip:        "#40e0d0",
+            petals:     11,
+            size:       0.7,
+            center:     "#001f5b",
+            leaf_size:  0.9,
+            leaf_color: "#3a0ca3",
+            stem_color: "#36454f",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
     None // nothing grew — adjust conditions or sliders and try again
 }
