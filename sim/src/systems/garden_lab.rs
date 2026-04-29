@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -120,11 +120,11 @@ pub const CAN_INTERACTIVE: bool = false;
 //   Returns true when the can is close enough that water reaches the seed.
 
 pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
-    (0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
+    (0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 3
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    return distance_px > 30.0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -152,6 +152,104 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
+
+    // Desert Rose — thrives in hot, dry conditions with moderate fertilizer
+    if moisture >= 0.1 && moisture <= 0.35
+        && fertilizer >= 1.2 && fertilizer <= 2.2
+        && temperature >= 28.0 && temperature <= 38.0
+    {
+        return Some(Flower {
+            name:       "Desert Rose",
+            color:      "#ff4d6d",
+            tip:        "#c1121f",
+            petals:     6,
+            size:       1.2,
+            center:     "#8b4513",
+            leaf_size:  0.8,
+            leaf_color: "#6b8e23",
+            stem_color: "#8b7355",
+            leaf_pos:   0.4,
+            leaf_above: false,
+        });
+    }
+
+    // Frost Lily — blooms in cool conditions with good moisture
+    if moisture >= 0.4 && moisture <= 0.7
+        && fertilizer >= 1.0 && fertilizer <= 1.8
+        && temperature >= 5.0 && temperature <= 15.0
+    {
+        return Some(Flower {
+            name:       "Frost Lily",
+            color:      "#b0e0e6",
+            tip:        "#48cae4",
+            petals:     4,
+            size:       1.5,
+            center:     "#001f5b",
+            leaf_size:  1.2,
+            leaf_color: "#4a7c9e",
+            stem_color: "#2c5aa0",
+            leaf_pos:   0.5,
+            leaf_above: false,
+        });
+    }
+
+    // Wildflower — adaptable flower that grows in moderate conditions
+    if moisture >= 0.35 && moisture <= 0.75
+        && fertilizer >= 1.3 && fertilizer <= 2.5
+        && temperature >= 15.0 && temperature <= 25.0
+    {
+        return Some(Flower {
+            name:       "Wildflower",
+            color:      "#e040fb",
+            tip:        "#9b1b30",
+            petals:     7,
+            size:       0.9,
+            center:     "#ffd23f",
+            leaf_size:  0.9,
+            leaf_color: "#2d6a4f",
+            stem_color: "#355e3b",
+            leaf_pos:   0.6,
+            leaf_above: false,
+        });
+    }
+
+    if moisture >= 0.80 && moisture <= 0.90
+        && fertilizer >= 1.0 && fertilizer <= 1.5
+        && temperature >= 25.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "Sillyflower",
+            color:      "#ebde2b",
+            tip:        "#b9e41e",
+            petals:     12,
+            size:       0.9,
+            center:     "#ffd23f",
+            leaf_size:  0.3,
+            leaf_color: "#2d6a4f",
+            stem_color: "#355e3b",
+            leaf_pos:   0.7,
+            leaf_above: false,
+        });
+    }
+
+    if moisture >= 0.10 && moisture <= 0.15
+        && fertilizer >= 0.8 && fertilizer <= 1.0
+        && temperature >= 11.0 && temperature <= 14.0
+    {
+        return Some(Flower {
+            name:       "Somethingflower",
+            color:      "#ff961d",
+            tip:        "#f0d437",
+            petals:     10,
+            size:       0.5,
+            center:     "#3fd9ff",
+            leaf_size:  0.9,
+            leaf_color: "#2d6a4f",
+            stem_color: "#355e3b",
+            leaf_pos:   0.9,
+            leaf_above: true,
+        });
+    }
 
     None // nothing grew — adjust conditions or sliders and try again
 }

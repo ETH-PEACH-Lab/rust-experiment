@@ -104,6 +104,7 @@ pub struct GardenState {
     pub c4_day_h:  f64,  pub c4_dark_h: f64,  pub c4_lux: f64,
     pub c5_day_h:  f64,  pub c5_dark_h: f64,  pub c5_lux: f64,
     pub cycles_completed: u32,
+    pub auto_waters: Vec<Option<systems::pests::AutoWater>>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
@@ -124,15 +125,16 @@ impl GardenState {
             season:          Season::Spring,
             tree:            systems::tree::Tree::new(),
             elapsed_seconds: 0.0,
-            can_x:           250.0,
+            can_x:           50.0,
             can_y:           40.0,
-            can_angle:       -500.0,
-            c1_day_h:  8.0,  c1_dark_h: 5.0,  c1_lux: 0.5,
-            c2_day_h: 10.0,  c2_dark_h: 12.0,  c2_lux: 0.2,
-            c3_day_h:  17.0,  c3_dark_h: 13.0,  c3_lux: 0.5,
-            c4_day_h: 12.0,  c4_dark_h:  14.0,  c4_lux: 0.3,
-            c5_day_h:  9.0,  c5_dark_h: 12.0,  c5_lux: 0.7,
+            can_angle:       45.0,
+            c1_day_h:  8.0,  c1_dark_h: 16.0,  c1_lux: 0.5,
+            c2_day_h: 10.0,  c2_dark_h: 14.0,  c2_lux: 0.2,
+            c3_day_h:  17.0,  c3_dark_h: 7.0,  c3_lux: 0.5,
+            c4_day_h: 12.0,  c4_dark_h:  12.0,  c4_lux: 0.3,
+            c5_day_h:  9.0,  c5_dark_h: 15.0,  c5_lux: 0.7,
             cycles_completed: 0,
+            auto_waters: (0..NUM_BEDS).map(|_| None).collect(),
         }
     }
 
@@ -143,8 +145,27 @@ impl GardenState {
     pub fn tick(&mut self, dt: f64) {
         self.elapsed_seconds += dt;
 
+        // Auto-watering: trigger when configured and conditions are met.
+        for bed_id in 0..self.beds.len() {
+            let trigger = match self.auto_waters.get(bed_id).and_then(|a| a.as_ref()) {
+                Some(aw) => aw.should_water(self.beds[bed_id].moisture, self.elapsed_seconds),
+                None => continue,
+            };
+            if trigger {
+                self.beds[bed_id].watering_active = true;
+                if let Some(aw) = self.auto_waters[bed_id].as_mut() {
+                    aw.record_activation(self.elapsed_seconds);
+                }
+            } else if let Some(aw) = self.auto_waters.get(bed_id).and_then(|a| a.as_ref()) {
+                // Stop watering once moisture has recovered above threshold.
+                if self.beds[bed_id].moisture >= aw.threshold {
+                    self.beds[bed_id].watering_active = false;
+                }
+            }
+        }
+
         let solar_flux = self.sun_size * 40.0;
-        self.temperature = solar_flux + 273.15;
+        self.temperature = solar_flux;
 
         let temp_above_base = (self.temperature - 20.0).max(0.0);
         let evap_rate = EVAP_BASE + temp_above_base * 0.0003;
@@ -225,16 +246,56 @@ impl GardenState {
         self.season = season;
     }
 
-    pub fn apply_fertilizer(&mut self, _bed_id: usize, _ftype: systems::fertilizer::FertilizerType) {
-        unimplemented!()
+    pub fn apply_fertilizer(&mut self, bed_id: usize, ftype: systems::fertilizer::FertilizerType) {
+        let seasonal = systems::fertilizer::seasonal_rate(&self.season);
+        if let Some(bed) = self.beds.get_mut(bed_id) {
+            bed.fertilizer_boost = ftype.boost_multiplier() * seasonal;
+            bed.fertilizer_age = 0.0;
+        }
     }
 
     pub fn scan_pests(&self) -> Vec<systems::pests::PestAlert> {
-        unimplemented!()
+        use systems::pests::{PestAlert, PestType};
+        let mut alerts = Vec::new();
+        for bed in &self.beds {
+            if bed.moisture > MOISTURE_MAX {
+                alerts.push(PestAlert {
+                    bed_id: bed.id,
+                    severity: ((bed.moisture - MOISTURE_MAX) / (1.0 - MOISTURE_MAX)).clamp(0.0, 1.0),
+                    pest_type: PestType::Fungus,
+                });
+            }
+            if bed.moisture < MOISTURE_MIN {
+                alerts.push(PestAlert {
+                    bed_id: bed.id,
+                    severity: ((MOISTURE_MIN - bed.moisture) / MOISTURE_MIN).clamp(0.0, 1.0),
+                    pest_type: PestType::SpiderMites,
+                });
+            }
+            if self.temperature > TEMP_MAX {
+                alerts.push(PestAlert {
+                    bed_id: bed.id,
+                    severity: ((self.temperature - TEMP_MAX) / 10.0).clamp(0.0, 1.0),
+                    pest_type: PestType::Whitefly,
+                });
+            }
+            if bed.health < 0.5 {
+                alerts.push(PestAlert {
+                    bed_id: bed.id,
+                    severity: (1.0 - bed.health).clamp(0.0, 1.0),
+                    pest_type: PestType::Aphids,
+                });
+            }
+        }
+        alerts
     }
 
-    pub fn configure_auto_water(&mut self, _bed_id: usize, _threshold: f64, _cooldown_secs: f64) {
-        unimplemented!()
+    pub fn configure_auto_water(&mut self, bed_id: usize, threshold: f64, cooldown_secs: f64) {
+        if bed_id >= self.beds.len() { return; }
+        if self.auto_waters.len() < self.beds.len() {
+            self.auto_waters.resize_with(self.beds.len(), || None);
+        }
+        self.auto_waters[bed_id] = Some(systems::pests::AutoWater::new(threshold, cooldown_secs));
     }
 }
 
