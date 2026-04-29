@@ -124,7 +124,7 @@ pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    distance_px < 120.0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -149,9 +149,84 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
             leaf_above: false,
         });
     }
+     if moisture >= 0.0 && moisture <= 100.0
+        && fertilizer >= 0.0
+        && temperature >= 0.0 && temperature <= 300.0
+        {
+        return Some(Flower {
+            name:       "Strongflower",
+            color:      "#ffd23f",
+            tip:        "#ffaa00",
+            petals:     5,
+            size:       2.0,
+            center:     "#8b5a2b",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
 
-    // TODO ─────────────────────────────────────────────────────────────────
-    // Come up with a couple new flowers that grow from different growing conditions.
+    // Desert Bloom — hot, dry conditions
+    if moisture >= 0.0 && moisture <= 0.3
+        && fertilizer >= 1.0 && fertilizer <= 2.0
+        && temperature >= 30.0 && temperature <= 40.0
+    {
+        return Some(Flower {
+            name:       "Desert Bloom",
+            color:      "#ff7f50",
+            tip:        "#fa8072",
+            petals:     4,
+            size:       0.8,
+            center:     "#ff8c00",
+            leaf_size:  0.7,
+            leaf_color: "#6b4423",
+            stem_color: "#8b6914",
+            leaf_pos:   0.6,
+            leaf_above: false,
+        });
+    }
+
+    // Frost Rose — cold, moist conditions
+    if moisture >= 0.4 && moisture <= 0.7
+        && fertilizer >= 2.0 && fertilizer <= 3.0
+        && temperature >= 0.0 && temperature <= 12.0
+    {
+        return Some(Flower {
+            name:       "Frost Rose",
+            color:      "#c1121f",
+            tip:        "#800020",
+            petals:     6,
+            size:       1.2,
+            center:     "#36454f",
+            leaf_size:  1.3,
+            leaf_color: "#2d6a4f",
+            stem_color: "#1b4332",
+            leaf_pos:   0.4,
+            leaf_above: false,
+        });
+    }
+
+    // Twilight Orchid — moderate moisture, low light tolerance
+    if moisture >= 0.3 && moisture <= 0.6
+        && fertilizer >= 1.8 && fertilizer <= 2.8
+        && temperature >= 18.0 && temperature <= 26.0
+    {
+        return Some(Flower {
+            name:       "Twilight Orchid",
+            color:      "#da70d6",
+            tip:        "#7b2d8b",
+            petals:     8,
+            size:       1.1,
+            center:     "#c8a2c8",
+            leaf_size:  1.0,
+            leaf_color: "#3d3d5c",
+            stem_color: "#4a3f60",
+            leaf_pos:   0.5,
+            leaf_above: true,
+        });
+    }
 
     None // nothing grew — adjust conditions or sliders and try again
 }
