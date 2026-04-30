@@ -10,21 +10,22 @@ pub struct Feature {
 #[derive(Debug, Clone, Serialize)]
 pub struct Tree {
     pub health:    f64,
-    pub feature_a: Feature,
-    pub feature_b: Feature,
-    pub feature_c: Feature,
+    pub height: f64,
+    pub age: i64,
 }
 
 impl Tree {
     pub fn new() -> Self {
         Tree {
-            health:    1.0,
-            feature_a: Feature::default(),
-            feature_b: Feature::default(),
-            feature_c: Feature::default(),
+            height: 0.0,
+            health: 1.0,
+            age: 0,
         }
     }
 
     pub fn tick(&mut self, _dt: f64, _moisture: f64, _light_ok: bool, _temperature: f64) {
+        pub fn tree_grow(&self) -> integer {
+            self.height = moisture * 0.05 + temperature * 0.002 + mosture * 
+        }
     }
 }

@@ -149,6 +149,45 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
             leaf_above: false,
         });
     }
+    // EXAMPLE - Rose 
+     if moisture >= 0.3 && moisture <= 0.5
+        && fertilizer >= 2.0
+        && temperature >= 20.0 && temperature <= 25.0
+    {
+        return Some(Flower {
+            name:       "Rose",
+            color:      "#c04000",
+            tip:        "#cc4e2a",
+            petals:     5,
+            size:       2.0,
+            center:     "#8b5a2b",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: true,
+        });
+    }
+    // CACTUS
+    if moisture >= 0.1 && moisture <= 0.3
+        && fertilizer >= 1.0
+        && temperature >= 5.0 && temperature <= 20.0
+    {
+        return Some(Flower {
+            name:       "Cactus",
+            color:      "#2d6a4f",
+            tip:        "#2d6a4f",
+            petals:     5,
+            size:       2.0,
+            center:     "#8b5a2b",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: true,
+        });
+    }
+
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
