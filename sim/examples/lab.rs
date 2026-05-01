@@ -2,7 +2,7 @@ use garden_sim::systems::garden_lab::{CAN_INTERACTIVE, can_tilt_angle, classify,
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-
+    println!("hi");
     // Mode: "check <distance_px>" → watering physics
     if args.get(1).map(|s| s.as_str()) == Some("check") {
         let dist: f64 = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(100.0);

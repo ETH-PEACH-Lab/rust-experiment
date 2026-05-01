@@ -2,6 +2,7 @@ use garden_sim::garden::{GardenState, MOISTURE_MIN};
 
 #[test]
 fn test_watering_increases_moisture() {
+    println!("XXX");
     let mut g = GardenState::new();
     g.temperature = 20.0;
     g.beds[0].moisture = 0.2;

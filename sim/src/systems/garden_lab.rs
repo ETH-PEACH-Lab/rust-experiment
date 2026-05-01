@@ -153,5 +153,60 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
 
+ if moisture >= 0.5 && moisture <= 0.8
+        && fertilizer >= 1.5
+        && temperature >= 22.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "Palm",
+            color:      "#ce2b2b",
+            tip:        "#ffaa00",
+            petals:     5,
+            size:       2.0,
+            center:     "#8b5a2b",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
+     if moisture >= 0.2 && moisture <= 0.8
+        && fertilizer >= 1.5
+        && temperature >= 22.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "Aloe",
+            color:      "#00ff40",
+            tip:        "#ffaa00",
+            petals:     5,
+            size:       2.0,
+            center:     "#8b5a2b",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
+     if moisture >= 0.0 && moisture <= 0.5
+        && fertilizer >= 1.5
+        && temperature >= 22.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "Zamiokulkas",
+            color:      "#000000",
+            tip:        "#ffaa00",
+            petals:     5,
+            size:       2.0,
+            center:     "#8b5a2b",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
+
     None // nothing grew — adjust conditions or sliders and try again
 }

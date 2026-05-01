@@ -124,7 +124,7 @@ impl GardenState {
             season:          Season::Spring,
             tree:            systems::tree::Tree::new(),
             elapsed_seconds: 0.0,
-            can_x:           250.0,
+            can_x:           200.0,
             can_y:           40.0,
             can_angle:       -500.0,
             c1_day_h:  8.0,  c1_dark_h: 5.0,  c1_lux: 0.5,
@@ -163,7 +163,16 @@ impl GardenState {
         let light_ok = total_growth > 0.0;
 
         for bed in &mut self.beds {
-            let water_reaches = bed.watering_active && self.can_angle > 20.0 && self.can_x < 180.0;
+            //let water_reaches = bed.watering_active && self.can_angle > -20.0 && self.can_x > 180.0;
+
+            let water_reaches = bed.watering_active && self.can_x > 180.0;
+            if bed.watering_active {
+                println!("XXX watering 1");
+            }
+            if self.can_x > 180.0 {
+                println!("XXX watering 2");
+            }
+
             let water_in = if water_reaches { WATER_FLOW * dt } else { 0.0 };
             bed.moisture = (bed.moisture - evap_rate * dt + water_in).clamp(0.0, 1.0);
 
