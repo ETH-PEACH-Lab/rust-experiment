@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -120,7 +120,7 @@ pub const CAN_INTERACTIVE: bool = false;
 //   Returns true when the can is close enough that water reaches the seed.
 
 pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
-    (0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
+    -(0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
@@ -147,6 +147,40 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
             stem_color: "#3d7a3a",
             leaf_pos:   0.35,
             leaf_above: false,
+        });
+    } else if moisture < 0.2
+      && fertilizer >= 0.2
+      && temperature > 28.0 && temperature < 35.0
+    {
+        return Some(Flower {
+            name: "Pistachio",
+            color: "#da70d6",
+            tip: "#e040fb",
+            petals: 3,
+            size: 1.0,
+            center: "#ffd23f",
+            leaf_size: 0.2,
+            leaf_color: "#a8d500",
+            stem_color: "#93c572",
+            leaf_pos: 0.1,
+            leaf_above: true,
+        });
+    } else if moisture > 0.6
+      && fertilizer < 1.5
+      && temperature > 10.0 && temperature < 30.0
+    {
+        return Some(Flower {
+            name: "Hydrangea",
+            color: "#75a6e7",
+            tip: "#1831c2",
+            petals: 5,
+            size: 1.0,
+            center: "#ffd23f",
+            leaf_size: 0.6,
+            leaf_color: "#a8d500",
+            stem_color: "#93c572",
+            leaf_pos: 0.5,
+            leaf_above: true,
         });
     }
 
