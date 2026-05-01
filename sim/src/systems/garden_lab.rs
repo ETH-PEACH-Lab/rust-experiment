@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -120,11 +120,13 @@ pub const CAN_INTERACTIVE: bool = false;
 //   Returns true when the can is close enough that water reaches the seed.
 
 pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
-    (0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
+    // (0.8 + (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
+    120.0
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    true
+    // distance_px < 120.0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -150,8 +152,44 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
         });
     }
 
-    // TODO ─────────────────────────────────────────────────────────────────
-    // Come up with a couple new flowers that grow from different growing conditions.
+
+    if moisture >= 0.1 && moisture <= 0.2
+        && fertilizer >= 2.5
+        && temperature >= 10.0 && temperature <= 12.0
+    {
+        return Some(Flower {
+            name:       "Flower 1",
+            color:      "#48cae4",
+            tip:        "#b497ff",
+            petals:     12,
+            size:       1.0,
+            center:     "#ff7f50",
+            leaf_size:  0.25,
+            leaf_color: "#4682b4",
+            stem_color: "#6495ed",
+            leaf_pos:   0.75,
+            leaf_above: true,
+        });
+    }
+
+        if moisture >= 0.8 && moisture <= 0.9
+        && fertilizer >= 2.5
+        && temperature >= 10.0 && temperature <= 12.0
+    {
+        return Some(Flower {
+            name:       "Flower 2",
+            color:      "#fffdd0",
+            tip:        "#ff66aa",
+            petals:     4,
+            size:       1.5,
+            center:     "#ff7f50",
+            leaf_size:  1.0,
+            leaf_color: "#ff2400",
+            stem_color: "#cc4e2a",
+            leaf_pos:   0,
+            leaf_above: false,
+        });
+    }
 
     None // nothing grew — adjust conditions or sliders and try again
 }
