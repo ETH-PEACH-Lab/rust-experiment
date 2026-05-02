@@ -113,7 +113,7 @@ pub struct Flower {
 
 pub const CAN_INTERACTIVE: bool = false;
 
-// can_tilt_angle:
+pub can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
 //
 // water_reaches:
