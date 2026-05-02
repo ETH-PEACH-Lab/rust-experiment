@@ -150,8 +150,89 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
         });
     }
 
-    // TODO ─────────────────────────────────────────────────────────────────
-    // Come up with a couple new flowers that grow from different growing conditions.
+
+    // Desert Bloom - dry, hot conditions, low fertilizer
+    if moisture >= 0.0 && moisture <= 0.25
+        && fertilizer >= 1.0 && fertilizer <= 1.8
+        && temperature >= 32.0 && temperature <= 40.0
+    {
+        return Some(Flower {
+            name:       "Desert Bloom",
+            color:      "#ff7f50",
+            tip:        "#fa8072",
+            petals:     4,
+            size:       0.8,
+            center:     "#ffa500",
+            leaf_size:  0.6,
+            leaf_color: "#8faf8f",
+            stem_color: "#a67c52",
+            leaf_pos:   0.4,
+            leaf_above: false,
+        });
+    }
+
+    // Frost Rose - cold conditions with high fertilizer
+    if temperature >= 0.0 && temperature <= 12.0
+        && moisture >= 0.3 && moisture <= 0.7
+        && fertilizer >= 2.5 && fertilizer <= 3.0
+    {
+        return Some(Flower {
+            name:       "Frost Rose",
+            color:      "#c1121f",
+            tip:        "#800020",
+            petals:     5,
+            size:       1.2,
+            center:     "#36454f",
+            leaf_size:  1.0,
+            leaf_color: "#2d6a4f",
+            stem_color: "#1a3a1a",
+            leaf_pos:   0.45,
+            leaf_above: false,
+        });
+    }
+
+    
+
+    // Violet Garden - moderate moisture, moderate to high fertilizer, mild temperature
+    if moisture >= 0.4 && moisture <= 0.6
+        && fertilizer >= 2.0 && fertilizer <= 3.0
+        && temperature >= 15.0 && temperature <= 22.0
+    {
+        return Some(Flower {
+            name:       "Violet Garden",
+            color:      "#7b2d8b",
+            tip:        "#da70d6",
+            petals:     6,
+            size:       1.1,
+            center:     "#8e4585",
+            leaf_size:  1.2,
+            leaf_color: "#50c878",
+            stem_color: "#4f7942",
+            leaf_pos:   0.5,
+            leaf_above: true,
+        });
+    }
+
+
+    // Ember Lily - hot, moderate moisture, moderate fertilizer
+    if temperature >= 28.0 && temperature <= 38.0
+        && moisture >= 0.3 && moisture <= 0.6
+        && fertilizer >= 1.5 && fertilizer <= 2.5
+    {
+        return Some(Flower {
+            name:       "Ember Lily",
+            color:      "#ff2400",
+            tip:        "#ffb347",
+            petals:     8,
+            size:       1.6,
+            center:     "#cc4e2a",
+            leaf_size:  0.9,
+            leaf_color: "#8a9a5b",
+            stem_color: "#6b6b00",
+            leaf_pos:   0.3,
+            leaf_above: false,
+        });
+    }
 
     None // nothing grew — adjust conditions or sliders and try again
 }
