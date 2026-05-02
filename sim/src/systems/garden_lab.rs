@@ -153,5 +153,43 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
 
+    if moisture <= 0.2
+        && fertilizer <= 0.2
+        && temperature >= 15 && temerature <= 20
+    {
+        return Some(Flower {
+            name: "Shrieking Mandrake",
+            color: "#fffdd0",
+            tip: "#800020",
+            petals: 3,
+            size: 1.8,
+            center: #fffdd0,
+            leaf_size:  2.0,
+            leaf_color: "#fffdd0",
+            stem_color: "#fffdd0",
+            leaf_pos:   0.00,
+            leaf_above: true,
+        })
+    }
+
+    if moisture >= 1
+        && fertilizer <= 0
+        && temperature >= 10 && temerature <= 15
+    {
+        return Some(Flower {
+            name: "Swamp Creature",
+            color: "#8a9a5b",
+            tip: "#8a9a5b",
+            petals: 12,
+            size: 0.6,
+            center: #355e3b,
+            leaf_size:  0.5,
+            leaf_color: "#4f7942",
+            stem_color: "#4f7942",
+            leaf_pos:   1.00,
+            leaf_above: false,
+        })
+    }
+
     None // nothing grew — adjust conditions or sliders and try again
 }
