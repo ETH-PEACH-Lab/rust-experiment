@@ -131,6 +131,7 @@ pub fn water_reaches(distance_px: f64) -> bool {
 
 pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flower> {
     // EXAMPLE — Sunflower (already filled in; leave it or change it as you like)
+
     if moisture >= 0.5 && moisture <= 0.8
         && fertilizer >= 1.5
         && temperature >= 22.0 && temperature <= 30.0
@@ -150,8 +151,45 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
         });
     }
 
-    // TODO ─────────────────────────────────────────────────────────────────
-    // Come up with a couple new flowers that grow from different growing conditions.
+     // TODO ─────────────────────────────────────────────────────────────────
+    // Come up with a couple new flowers that grow from different growing conditions.   
+        if moisture >= 0.0 && moisture <= 0.2
+        && fertilizer <= 1.2
+        && temperature >= 32.0 && temperature <= 40.0
+    {
+        return Some(Flower {
+            name:       "Desert bloom",
+            color:      "#ff7f50",
+            tip:        "#fa8072",
+            petals:     4,
+            size:       0.8,
+            center:     "#f4a261",
+            leaf_size:  0.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
+
+    if moisture >= 0.5 && moisture <= 0.8
+        && fertilizer >= 2.5
+        && temperature >= 0 && temperature <= 10.0
+    {
+        return Some(Flower {
+            name:       "Frost rose",
+            color:      "#c1121f",
+            tip:        "#800020",
+            petals:     5,
+            size:       1.2,
+            center:     "#9b1b30",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
 
     None // nothing grew — adjust conditions or sliders and try again
 }
