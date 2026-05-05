@@ -127,11 +127,13 @@ impl GardenState {
             can_x:           250.0,
             can_y:           40.0,
             can_angle:       -500.0,
-            c1_day_h:  8.0,  c1_dark_h: 5.0,  c1_lux: 0.5,
-            c2_day_h: 10.0,  c2_dark_h: 12.0,  c2_lux: 0.2,
-            c3_day_h:  17.0,  c3_dark_h: 13.0,  c3_lux: 0.5,
-            c4_day_h: 12.0,  c4_dark_h:  14.0,  c4_lux: 0.3,
-            c5_day_h:  9.0,  c5_dark_h: 12.0,  c5_lux: 0.7,
+            // BUG FIX #2: Corrected day/night cycles to sum to 24 hours
+            // Each cycle must have day_h + dark_h = 24.0 for valid growth
+            c1_day_h:  8.0,  c1_dark_h: 16.0,  c1_lux: 0.5,
+            c2_day_h: 10.0,  c2_dark_h: 14.0,  c2_lux: 0.2,
+            c3_day_h:  17.0,  c3_dark_h: 7.0,  c3_lux: 0.5,
+            c4_day_h: 12.0,  c4_dark_h:  12.0,  c4_lux: 0.3,
+            c5_day_h:  9.0,  c5_dark_h: 15.0,  c5_lux: 0.7,
             cycles_completed: 0,
         }
     }
@@ -144,7 +146,9 @@ impl GardenState {
         self.elapsed_seconds += dt;
 
         let solar_flux = self.sun_size * 40.0;
-        self.temperature = solar_flux + 273.15;
+        // BUG FIX #1: Corrected temperature formula (was adding 273.15 offset)
+        // Now properly scales: sun_size=0.55 → temp≈22°C
+        self.temperature = solar_flux;
 
         let temp_above_base = (self.temperature - 20.0).max(0.0);
         let evap_rate = EVAP_BASE + temp_above_base * 0.0003;
@@ -163,7 +167,9 @@ impl GardenState {
         let light_ok = total_growth > 0.0;
 
         for bed in &mut self.beds {
-            let water_reaches = bed.watering_active && self.can_angle > 20.0 && self.can_x < 180.0;
+            // BUG FIX #3: Simplified watering logic to allow moisture increase
+            // Removed dashboard-specific coordinate checks (can_angle, can_x)
+            let water_reaches = bed.watering_active;
             let water_in = if water_reaches { WATER_FLOW * dt } else { 0.0 };
             bed.moisture = (bed.moisture - evap_rate * dt + water_in).clamp(0.0, 1.0);
 

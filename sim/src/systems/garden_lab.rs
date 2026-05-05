@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -131,9 +131,9 @@ pub fn water_reaches(distance_px: f64) -> bool {
 
 pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flower> {
     // EXAMPLE — Sunflower (already filled in; leave it or change it as you like)
-    if moisture >= 0.5 && moisture <= 0.8
+    if moisture >= 0.0 && moisture <= 0.2
         && fertilizer >= 1.5
-        && temperature >= 22.0 && temperature <= 30.0
+        && temperature >= 32.0 && temperature <= 30.0
     {
         return Some(Flower {
             name:       "Sunflower",
@@ -152,6 +152,49 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
+}
 
-    None // nothing grew — adjust conditions or sliders and try again
+
+pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flower> {
+    // solution — fancy flower (already filled in; leave it or change it as you like)
+    if moisture >= 0.2 && moisture <= 0.4
+        && fertilizer >= 1.5
+        && temperature >= 32.0 && temperature <= 44.0
+    {
+        return Some(Flower {
+            name:       "Fancyflower",
+            color:      "#ffd23f",
+            tip:        "#ffaf00",
+            petals:     5,
+            size:       2.0,
+            center:     "#8bff2b",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3ffa3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
+}
+    
+pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flower> {
+// Solution — Fancyflower 2 (already filled in; leave it or change it as you like)
+if moisture >= 0.5 && moisture <= 0.8
+    && fertilizer >= 1.5
+    && temperature >= 22.0 && temperature <= 30.0
+{
+    return Some(Flower {
+        name:       "Fancyflower 2",
+        color:      "#ffd2ff",
+        tip:        "#ffaaff",
+        petals:     7,
+        size:       8.0,
+        center:     "#8b5aff",
+        leaf_size:  1.5,
+        leaf_color: "#4a9bff",
+        stem_color: "#3d7aff",
+        leaf_pos:   0.65,
+        leaf_above: false,
+    });
+}
 }
