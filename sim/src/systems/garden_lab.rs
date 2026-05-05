@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -124,7 +124,8 @@ pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    assert!(false, "{}", distance_px);
+    distance_px > 10.0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -152,6 +153,23 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
-
+    if moisture >= 0.9 && moisture <= 0.8
+        && fertilizer >= 1.5
+        && temperature >= 22.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "Poisonbloom",
+            color:      "#da70d6",
+            tip:        "#ffae00",
+            petals:     12,
+            size:       5.0,
+            center:     "#2e5a2b",
+            leaf_size:  1.5,
+            leaf_color: "#eae0c8",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
     None // nothing grew — adjust conditions or sliders and try again
 }
