@@ -144,14 +144,47 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
             center:     "#8b5a2b",
             leaf_size:  1.5,
             leaf_color: "#4a9b5f",
-            stem_color: "#3d7a3a",
+            stem_color: "#a8d500",
             leaf_pos:   0.35,
             leaf_above: false,
         });
     }
-
-    // TODO ─────────────────────────────────────────────────────────────────
-    // Come up with a couple new flowers that grow from different growing conditions.
-
+    if moisture >= 0.9
+        && fertilizer >= 2.0 && fertilizer <= 3.0
+        && temperature >= 25.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "Warm flower",
+            color:      "#ccccff",
+            tip:        "#c04000",
+            petals:     10,
+            size:       0.9,
+            center:     "#c1121f",
+            leaf_size:  1.9,
+            leaf_color: "#2d6a4f",
+            stem_color: "#2f6a11",
+            leaf_pos:   0.55,
+            leaf_above: true,
+        });
+    }
+    if moisture >= 0.1 && moisture <= 0.3
+        && fertilizer >= 1.0 && fertilizer <= 2.0
+        && temperature >= 18.0 && temperature <= 22.0
+    {
+        return Some(Flower {
+            name:       "Dandelion",
+            color:      "#fff44f",
+            tip:        "#ffaa00",
+            petals:     100,
+            size:       0.2,
+            center:     "#fff44f",
+            leaf_size:  1.3,
+            leaf_color: "#4a9b50",
+            stem_color: "#a8d500",
+            leaf_pos:   0.12,
+            leaf_above: false,
+        });
+    }
+    
     None // nothing grew — adjust conditions or sliders and try again
 }
