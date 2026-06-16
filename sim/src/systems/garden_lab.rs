@@ -96,16 +96,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 pub struct Flower {
-    pub name:        &'static str,  // display name shown in the dashboard
+    pub name:    &'static str,  // display name shown in the dashboard
     pub color:       &'static str,  // petal base color (hex)
     pub tip:         &'static str,  // petal tip color  (hex, same as color = solid)
     pub petals:      u8,            // number of petals (3–12)
-    pub size:        f64,           // flower scale (0.6 = small, 1.0 = normal, 1.8 = giant)
+    pub size:    f64,           // flower scale (0.6 = small, 1.0 = normal, 1.8 = giant)
     pub center:      &'static str,  // center dot color (hex)
-    pub leaf_size:   f64,           // leaf scale (0.5 = tiny, 1.0 = normal, 2.0 = large)
+    pub leaf_size: f64,           // leaf scale (0.5 = tiny, 1.0 = normal, 2.0 = large)
     pub leaf_color:  &'static str,  // leaf color (hex)
     pub stem_color:  &'static str,  // stem color (hex)
-    pub leaf_pos:    f64,           // where on the stem leaves appear: 0.0 = near soil, 1.0 = near flower
+    pub leaf_pos:   f64,           // where on the stem leaves appear: 0.0 = near soil, 1.0 = near flower
     pub leaf_above:  bool,          // true = leaves render in FRONT of flower, false = behind
 }
 
@@ -120,11 +120,11 @@ pub const CAN_INTERACTIVE: bool = false;
 //   Returns true when the can is close enough that water reaches the seed.
 
 pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
-    (0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
+    (0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 40.0
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    distance_px > 180.0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -137,8 +137,8 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
     {
         return Some(Flower {
             name:       "Sunflower",
-            color:      "#ffd23f",
-            tip:        "#ffaa00",
+            color:      "#ff66aa",
+            tip:        "#ffb3c6",
             petals:     5,
             size:       2.0,
             center:     "#8b5a2b",
@@ -149,6 +149,29 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
             leaf_above: false,
         });
     }
+
+
+    pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flower> {
+    // EXAMPLE — Sunflower (already filled in; leave it or change it as you like)
+    if moisture >= 0.5 && moisture <= 0.8
+        && fertilizer >= 1.5
+        && temperature >= 22.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "Sunflower1",
+            color:      "#ffd23f",
+            tip:        "#ffaa00",
+            petals:     8,
+            size:       1.0,
+            center:     "#8b5a2b",
+            leaf_size:  1,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: true,
+        });
+    }
+
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.

@@ -19,12 +19,40 @@ impl Tree {
     pub fn new() -> Self {
         Tree {
             health:    1.0,
-            feature_a: Feature::default(),
-            feature_b: Feature::default(),
-            feature_c: Feature::default(),
+            feature_a: Feature { name: "Root System".to_string(), level: 0.0, active: false },
+            feature_b: Feature { name: "Canopy".to_string(), level: 0.0, active: false },
+            feature_c: Feature { name: "Flower Buds".to_string(), level: 0.0, active: false },
         }
     }
 
-    pub fn tick(&mut self, _dt: f64, _moisture: f64, _light_ok: bool, _temperature: f64) {
+    pub fn tick(&mut self, dt: f64, moisture: f64, light_ok: bool, temperature: f64) {
+        let good_conditions = moisture > 0.5 && light_ok && temperature > 15.0 && temperature < 30.0;
+
+        // Feature A (Root System): responds to moisture
+        if moisture > 0.5 {
+            self.feature_a.level = (self.feature_a.level + 0.001 * dt).min(1.0);
+            self.feature_a.active = true;
+        } else {
+            self.feature_a.level = (self.feature_a.level - 0.0005 * dt).max(0.0);
+            self.feature_a.active = false;
+        }
+
+        // Feature B (Canopy): responds to light
+        if light_ok {
+            self.feature_b.level = (self.feature_b.level + 0.001 * dt).min(1.0);
+            self.feature_b.active = true;
+        } else {
+            self.feature_b.level = (self.feature_b.level - 0.0005 * dt).max(0.0);
+            self.feature_b.active = false;
+        }
+
+        // Feature C (Flower Buds): responds to all good conditions
+        if good_conditions {
+            self.feature_c.level = (self.feature_c.level + 0.0008 * dt).min(1.0);
+            self.feature_c.active = true;
+        } else {
+            self.feature_c.level = (self.feature_c.level - 0.0003 * dt).max(0.0);
+            self.feature_c.active = false;
+        }
     }
 }
