@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -120,20 +120,21 @@ pub const CAN_INTERACTIVE: bool = false;
 //   Returns true when the can is close enough that water reaches the seed.
 
 pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
-    (0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 50.0
+    //(0.2 - (distance_px / max_dist).clamp(0.0, 1.0)) * 20.0
+    90.0
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    distance_px > 12.0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flower> {
     // EXAMPLE — Sunflower (already filled in; leave it or change it as you like)
-    if moisture >= 0.5 && moisture <= 0.8
-        && fertilizer >= 1.5
-        && temperature >= 22.0 && temperature <= 30.0
+    if moisture >= 0.0 && moisture <= 0.3
+        && fertilizer <= 1.5
+        && temperature >= 18.0 && temperature <= 30.0
     {
         return Some(Flower {
             name:       "Sunflower",
@@ -152,6 +153,50 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
+
+
+
+
+    if moisture >= 0.3 && moisture <= 0.66
+        && fertilizer <= 1.3 && fertilizer >= 2.4
+        && temperature >= 18.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "Rose",
+            color:      "#ffd23f",
+            tip:        "#ffaa00",
+            petals:     5,
+            size:       2.0,
+            center:     "#8b5a2b",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
+
+
+    if moisture >= 0.0 && moisture <= 0.3
+        && fertilizer <= 1.5
+        && temperature >= 18.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "Violet",
+            color:      "#8e4585",
+            tip:        "#ffaa00",
+            petals:     5,
+            size:       2.0,
+            center:     "#8b5a2b",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+    }
+
+
 
     None // nothing grew — adjust conditions or sliders and try again
 }

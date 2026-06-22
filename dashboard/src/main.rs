@@ -52,7 +52,9 @@ fn now_ms() -> u64 {
 /// Read `garden.rs` and extract the numeric value that follows `key:` on any line,
 /// skipping lines where the value is a type annotation (i.e. no digit follows).
 fn read_garden_value(workspace: &str, key: &str, fallback: f64) -> f64 {
-    let path = format!("{}/sim/src/garden.rs", workspace);
+    let path = std::path::PathBuf::from(workspace)
+        .join("sim").join("src").join("garden.rs")
+        .to_string_lossy().to_string();
     let src = match std::fs::read_to_string(&path) {
         Ok(s) => s,
         Err(_) => return fallback,
@@ -74,7 +76,9 @@ fn read_garden_value(workspace: &str, key: &str, fallback: f64) -> f64 {
 
 /// Returns true if the given code snippet exists anywhere in garden.rs.
 fn garden_has_code(workspace: &str, snippet: &str) -> bool {
-    let path = format!("{}/sim/src/garden.rs", workspace);
+    let path = std::path::PathBuf::from(workspace)
+        .join("sim").join("src").join("garden.rs")
+        .to_string_lossy().to_string();
     std::fs::read_to_string(&path)
         .map(|src| src.contains(snippet))
         .unwrap_or(false)
