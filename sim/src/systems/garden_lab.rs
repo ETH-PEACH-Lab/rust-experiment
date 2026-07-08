@@ -150,6 +150,50 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
         });
     }
 
+        else if moisture >= 0.3 && moisture <= 0.8
+        && fertilizer >= 2.0
+        && temperature >= 18.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "Rose",
+            color:      "#9b1b30",
+            tip:        "#fc8eac",
+            petals:     5,
+            size:       1.0,
+            center:     "#8b5a2b",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });}
+
+        else moisture >= 0.9 && moisture <= 0.8
+        && fertilizer >= 1.6
+        && temperature >= 20.0 && temperature <= 30.0
+        {
+         return Some(Flower {
+            name:       "Lilly",
+            color:      "#fffdd0",
+            tip:        "#c2b280",
+            petals:     5,
+            size:       0.8,
+            center:     "#36454f",
+            leaf_size:  1.5,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
+ }
+//   Ideas:
+//     - Desert bloom : dry (0.0–0.2), hot (32–40), low fertilizer
+//                      → coral, tip: salmon, 4 petals, size 0.8, orange center
+//     - Frost rose   : cold (0–10), moderate moisture, high fertilizer
+//                      → crimson, tip: burgundy, 5 petals, size 1.2, dark center
+
+    }
+
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
 
