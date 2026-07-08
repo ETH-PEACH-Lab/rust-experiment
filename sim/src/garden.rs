@@ -127,11 +127,11 @@ impl GardenState {
             can_x:           250.0,
             can_y:           40.0,
             can_angle:       -500.0,
-            c1_day_h:  8.0,  c1_dark_h: 5.0,  c1_lux: 0.5,
-            c2_day_h: 10.0,  c2_dark_h: 12.0,  c2_lux: 0.2,
-            c3_day_h:  17.0,  c3_dark_h: 13.0,  c3_lux: 0.5,
-            c4_day_h: 12.0,  c4_dark_h:  14.0,  c4_lux: 0.3,
-            c5_day_h:  9.0,  c5_dark_h: 12.0,  c5_lux: 0.7,
+            c1_day_h:  8.0,  c1_dark_h: 3.0,  c1_lux: 0.5,
+            c2_day_h: 10.0,  c2_dark_h: 7.0,  c2_lux: 0.2,
+            c3_day_h:  17.0,  c3_dark_h: 7.0,  c3_lux: 0.5,
+            c4_day_h: 12.0,  c4_dark_h:  7.0,  c4_lux: 0.3,
+            c5_day_h:  9.0,  c5_dark_h: 7.0,  c5_lux: 0.7,
             cycles_completed: 0,
         }
     }

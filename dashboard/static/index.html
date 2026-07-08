@@ -1568,14 +1568,14 @@ function resetSun() {
 const CAN = {
   // Body
   bodyX: -22, bodyY: -12, bodyW: 44, bodyH: 24,
-  // Interior — particles live here. Right wall at x=18, bottom at y=10.
-  innerX: -20, innerY: -10, innerW: 38, innerH: 20,
+  // Interior — particles live here. Right wall now extends to x=22 to reach spout base.
+  innerX: -20, innerY: -10, innerW: 42, innerH: 20,
   // Spout tube: visually at upper-right. Water travels through it before falling.
   spoutBase: { x: 22, y: -6  },   // right wall, upper area
-  spoutTip:  { x: 40, y: -24 },   // tip (points upward at rest)
+  spoutTip:  { x: 40, y: -40 },   // tip (points downward at rest)
   // Exit zone: bottom-right of interior, where particles physically collect
-  exitX: 18,
-  exitY: 10,
+  exitX: 22,
+  exitY: -6,
 };
 
 const GRAVITY_WORLD = 520; // px/s²

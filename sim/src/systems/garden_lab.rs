@@ -111,7 +111,7 @@ pub struct Flower {
 
 // ─── Watering mechanics ──────────────────────────────────────────────────────
 
-pub const CAN_INTERACTIVE: bool = false;
+pub const CAN_INTERACTIVE: bool = true;
 
 // can_tilt_angle:
 //   Returns how many degrees the can should tip when poured.
@@ -124,7 +124,7 @@ pub fn can_tilt_angle(distance_px: f64, max_dist: f64) -> f64 {
 }
 
 pub fn water_reaches(distance_px: f64) -> bool {
-    distance_px > 120.0
+    return distance_px > 20.0;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -152,6 +152,24 @@ pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flow
 
     // TODO ─────────────────────────────────────────────────────────────────
     // Come up with a couple new flowers that grow from different growing conditions.
-
+    pub fn classify(moisture: f64, fertilizer: f64, temperature: f64) -> Option<Flower> {
+    // EXAMPLE — Sunflower (already filled in; leave it or change it as you like)
+    if moisture <= 0.5 && moisture >= 0.1
+        && fertilizer >= 1.5
+        && temperature >= 22.0 && temperature <= 30.0
+    {
+        return Some(Flower {
+            name:       "Bigflower",
+            color:      "#3a0ca3",
+            tip:        "#ffaa00",
+            petals:     10,
+            size:       1.0,
+            center:     "#8b5a2b",
+            leaf_size:  2,
+            leaf_color: "#4a9b5f",
+            stem_color: "#3d7a3a",
+            leaf_pos:   0.35,
+            leaf_above: false,
+        });
     None // nothing grew — adjust conditions or sliders and try again
 }
